@@ -20,10 +20,15 @@ export async function POST(req: Request) {
     return new Response(JSON.stringify({ error: 'You must reveal at least one cell before cashing out' }), { status: 400 });
   }
 
-  const payout = Number((game.wager_amount * game.current_multiplier).toFixed(6));
+  const payout = game.wager_amount * game.current_multiplier;
   game.status = 'CASHED_OUT';
   game.completed_at = new Date();
   await game.save();
 
-  return new Response(JSON.stringify({ success: true, payout }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  return new Response(JSON.stringify({
+    success: true,
+    payout,
+    board: game.board_state.cell_types,
+    serverSeed: game.server_seed,
+  }), { status: 200, headers: { 'Content-Type': 'application/json' } });
 }

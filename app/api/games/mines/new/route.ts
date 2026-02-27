@@ -4,10 +4,10 @@ import { generateServerSeed } from '@/utils/game_seed';
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const { wagerAmount, playerPubkey } = body;
+  const { wagerAmount, playerPubkey, minesCount } = body;
 
-  if (!wagerAmount || !playerPubkey) {
-    return new Response(JSON.stringify({ error: 'Missing wagerAmount or playerPubkey' }), { status: 400 });
+  if (!wagerAmount || !playerPubkey || !minesCount ) {
+    return new Response(JSON.stringify({ error: 'Missing wagerAmount or playerPubkey or minesCount' }), { status: 400 });
   }
 
   await connectToDatabase();
@@ -24,6 +24,7 @@ export async function POST(req: Request) {
     },
     status: 'WAITING_CLIENT_SEED',
     server_seed: serverSeed, // keep secret until reveal
+    mines_count: minesCount,
     // store serverSeedHash if you want; generateServerSeed returned hash too
   });
 

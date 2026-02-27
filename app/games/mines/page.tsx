@@ -8,25 +8,28 @@ export default function MinesPage() {
   const [balance, setBalance] = useState(0); // dummy balance display
   const [gameId, setGameId] = useState<string | null>(null);
   const [serverSeedHash, setServerSeedHash] = useState<string | null>(null);
+  const [serverSeedShown, setServerSeedShown] = useState<string | null>(null);
   const [clientSeed, setClientSeed] = useState('');
+  const [minesCount, setMinesCount] = useState(5);
+  
+  // helper to copy
+  const copyText = (text: string) => {
+    navigator.clipboard.writeText(text);
+  };
+  
+  const truncate = (s: string, len = 8) =>
+    s.length > len * 2 ? `${s.slice(0, len)}...${s.slice(-len)}` : s;
   const [status, setStatus] = useState<'initial' | 'waiting' | 'active' | 'lost' | 'cashed'>('initial');
 
   // on mount, try to restore settings and generate default seed
   useEffect(() => {
     const storedPub = localStorage.getItem('playerPubkey');
     if (storedPub) setPlayerPubkey(storedPub);
-    const storedSeed = localStorage.getItem('clientSeed');
-    if (storedSeed) {
-      setClientSeed(storedSeed);
-    } else {
-      // generate random 32-char hex
-      const rand = Array.from({ length: 16 })
-        .map(() => Math.floor(Math.random() * 256).toString(16).padStart(2, '0'))
-        .join('');
-      setClientSeed(rand);
-    }
-    // dummy balance for display
-    setBalance(1000);
+    const storedWager = localStorage.getItem('wagerAmount');
+    if (storedWager) setWager(Number(storedWager));
+    const storedBalance = localStorage.getItem('balance');
+    if (storedBalance) setBalance(Number(storedBalance));
+    else setBalance(1000); // default balance for testing
   }, []);
 
   const [revealedIndices, setRevealedIndices] = useState<number[]>([]);
@@ -38,20 +41,28 @@ export default function MinesPage() {
     if (!playerPubkey || wager <= 0) return;
     // persist pubkey and seed locally
     localStorage.setItem('playerPubkey', playerPubkey);
-    localStorage.setItem('clientSeed', clientSeed);
+    localStorage.setItem('wagerAmount', wager.toString());
     const res = await fetch('/api/games/mines/new', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ playerPubkey, wagerAmount: wager }),
+      body: JSON.stringify({ playerPubkey, wagerAmount: wager, minesCount }),
     });
     const data = await res.json();
     if (res.ok) {
       setGameId(data.gameId);
       setServerSeedHash(data.serverSeedHash);
       setStatus('waiting');
+      const rand = Array.from({ length: 16 })
+        .map(() => Math.floor(Math.random() * 256).toString(16).padStart(2, '0'))
+        .join('');
+      setClientSeed(rand);
+      localStorage.setItem('clientSeed', clientSeed);
+      setBalance((b) => b - wager); // deduct wager from balance immediately
+      localStorage.setItem('balance', (balance - wager).toString());
     } else {
       alert(data.error || 'error starting game');
     }
+
   }
 
   async function submitClientSeed() {
@@ -86,6 +97,7 @@ export default function MinesPage() {
       // lose
       setStatus('lost');
       setBoardAnswer(data.board);
+      if (data.serverSeed) setServerSeedShown(data.serverSeed.seed || data.serverSeed);
       alert('BOOM! You hit a bomb.');
     }
   }
@@ -101,6 +113,13 @@ export default function MinesPage() {
     if (res.ok && data.success) {
       setStatus('cashed');
       setPayout(data.payout);
+      setBoardAnswer(data.board);
+      // reveal server seed as proof
+      setServerSeedHash(null); // clear hash
+      setServerSeedShown(data.serverSeed?.seed || '');
+      // update balance with payout
+      setBalance((b) => b + data.payout);
+      localStorage.setItem('balance', (balance + data.payout).toString());
     } else {
       alert(data.error || 'error cashing out');
     }
@@ -138,6 +157,26 @@ export default function MinesPage() {
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-4">Mines Game</h1>
+      {gameId && (
+        <div className="mb-4 space-y-1 text-sm">
+          <div>
+            Game id: {truncate(gameId)}{' '}
+            <button onClick={() => copyText(gameId)} className="ml-2 px-1 py-0.5 bg-gray-200 rounded">📋</button>
+          </div>
+          {(status === 'lost' || status === 'cashed') && (
+            <div>
+              Client seed: {truncate(clientSeed)}{' '}
+              <button onClick={() => copyText(clientSeed)} className="ml-2 px-1 py-0.5 bg-gray-200 rounded">📋</button>
+            </div>
+          )}
+          {serverSeedShown && (
+            <div>
+              Server seed: {truncate(serverSeedShown)}{' '}
+              <button onClick={() => copyText(serverSeedShown)} className="ml-2 px-1 py-0.5 bg-gray-200 rounded">📋</button>
+            </div>
+          )}
+        </div>
+      )}
 
       {status === 'initial' && (
         <div className="flex flex-col gap-2 max-w-xs">
@@ -151,6 +190,16 @@ export default function MinesPage() {
             />
           </label>
           <span className="text-sm text-gray-700">Balance: <strong>{balance}</strong></span>
+          <label className="flex flex-col">
+            Mines count (1-24)
+            <input
+              type="number"
+              placeholder="Mines count"
+              value={minesCount}
+              onChange={(e) => setMinesCount(Number(e.target.value))}
+              className="border p-1 font-bold text-black" 
+            />
+          </label>
           <label className="flex flex-col">
             Wager amount
             <input
@@ -176,7 +225,7 @@ export default function MinesPage() {
               placeholder="Client seed (hex)"
               value={clientSeed}
               onChange={(e) => setClientSeed(e.target.value)}
-              className="border p-1"
+              className="border p-1 font-bold text-black"
             />
           </label>
           <p className="text-sm text-gray-600">
@@ -200,6 +249,11 @@ export default function MinesPage() {
             </button>
           )}
           {status === 'cashed' && <p className="mt-2">Payout: {payout}</p>}
+          {(status === 'lost' || status === 'cashed') && (
+            <button onClick={() => location.reload()} className="bg-blue-600 text-white py-1 px-2 rounded mt-2">
+              Play again
+            </button>
+          )}
         </div>
       )}
     </div>
