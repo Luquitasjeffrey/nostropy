@@ -2,6 +2,7 @@
   "name": "nostropy",
   "version": "0.1.0",
   "description": "Open-source auditable casino with Nostr-based events and fair randomness",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "dev": "next dev",
