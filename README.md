@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Nostropy
 
-## Getting Started
+The open source nostr based online casino
 
-First, run the development server:
+Este proyecto está en fase de desarrollo todavía.
+
+Hasta ahora sólo se ha implementado el juego **mines** bajo la ruta `/games/mines`.
+
+Características clave:
+
+- Autenticación mediante Nostr (firma de apuestas y eventos).
+- 100% auditable y open source.
+- Aleatoriedad justa (*fair randomness*) usando client seed y server seed.
+
+El stack utiliza Next.js con TypeScript, combinando backend y frontend en el mismo repositorio.
+
+## Estructura del proyecto
+
+- `/api` contiene las rutas API de los juegos.
+- `/app/games/mines` alberga la interfaz del juego "mines".
+- `models/` incluye los esquemas de Mongoose.
+
+## Comenzando
+
+Instala las dependencias y ejecuta el servidor de desarrollo:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000) en tu navegador para ver la aplicación.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Contribuir
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Este proyecto es 100% open source. Si deseas colaborar o aportar mejoras:
 
-## Learn More
+1. Haz fork del repositorio.
+2. Crea una rama con tu feature o corrección.
+3. Envía un pull request describiendo tus cambios.
 
-To learn more about Next.js, take a look at the following resources:
+Asegúrate de que los cambios sigan el modelo de seguridad y verificabilidad de Nostr establecido en la documentación del proyecto.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+> Consulta los archivos `CLAUDE.md` y `AGENTS.md` para entender mejor el contexto y la finalidad de los asistentes automáticos o las instrucciones internas de IA.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Este README se actualizará a medida que se definan las especificaciones de los juegos y la arquitectura del sistema.
