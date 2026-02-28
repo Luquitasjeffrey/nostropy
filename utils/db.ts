@@ -6,7 +6,7 @@ let isConnected = false;
  * Initialize mongoose connection using MONGODB_URL env variable.
  * Returns the mongoose connection instance.
  */
-export async function connectToDatabase() {
+export async function connectDB() {
   if (isConnected) {
     return mongoose.connection;
   }
