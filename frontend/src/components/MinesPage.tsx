@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
 import { MinesGrid, type GameStatus, type CellAnswer } from './mines/MinesGrid';
 import { MinesControls } from './mines/MinesControls';
-import { Copy, KeyRound, Dices, ShieldCheck } from 'lucide-react';
-import { Input } from './ui/Input';
+import { Copy, ShieldCheck, Dices } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Modal } from './ui/Modal';
 
-export default function MinesPage() {
-  const [playerPubkey, setPlayerPubkey] = useState('');
+interface MinesPageProps {
+  playerPubkey: string;
+  balance: number;
+  setBalance: React.Dispatch<React.SetStateAction<number>>;
+}
+
+export default function MinesPage({ playerPubkey, balance, setBalance }: MinesPageProps) {
   const [wager, setWager] = useState(10);
-  const [balance, setBalance] = useState(0); // dummy balance display
   const [gameId, setGameId] = useState<string | null>(null);
   const [serverSeedHash, setServerSeedHash] = useState<string | null>(null);
   const [serverSeedShown, setServerSeedShown] = useState<string | null>(null);
@@ -25,13 +28,8 @@ export default function MinesPage() {
   const [isFairnessModalOpen, setIsFairnessModalOpen] = useState(false);
 
   useEffect(() => {
-    const storedPub = localStorage.getItem('playerPubkey');
-    if (storedPub) setPlayerPubkey(storedPub);
     const storedWager = localStorage.getItem('wagerAmount');
     if (storedWager) setWager(Number(storedWager));
-    const storedBalance = localStorage.getItem('balance');
-    if (storedBalance) setBalance(Number(storedBalance));
-    else setBalance(1000);
   }, []);
 
   const [revealedIndices, setRevealedIndices] = useState<number[]>([]);
@@ -150,25 +148,12 @@ export default function MinesPage() {
 
   return (
     <div className="w-full max-w-6xl mx-auto flex flex-col items-center justify-center p-4">
-      {/* Top Navbar / State info */}
-      <div className="w-full mb-6 flex items-center justify-between border-b-2 border-panel pb-4">
-        <div className="flex items-center space-x-2 text-primary font-bold text-2xl">
-          <Dices className="w-8 h-8" />
-          <span>Mines</span>
-        </div>
-        <div className="flex space-x-4">
-          <Input
-            value={playerPubkey}
-            onChange={(e) => setPlayerPubkey(e.target.value)}
-            placeholder="Pubkey ID"
-            icon={<KeyRound size={16} />}
-            className="w-40"
-          />
-          <div className="flex flex-col items-end justify-center px-4 py-1 bg-panel rounded-md border-2 border-[#1a2d37]">
-            <span className="text-xs text-gray-400">Balance</span>
-            <span className="text-sm text-white font-bold">${balance.toFixed(2)}</span>
-          </div>
-        </div>
+      {/* Game Identity Sub-header */}
+      <div className="w-full mb-4 flex items-center space-x-2 px-2">
+        <Dices className="w-5 h-5 text-primary drop-shadow-[0_0_5px_rgba(0,231,1,0.5)]" />
+        <span className="text-gray-400 font-bold text-sm uppercase tracking-widest">
+          Playing: <span className="text-white">Mines</span>
+        </span>
       </div>
 
       {/* Main Game Interface Layout */}
