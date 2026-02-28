@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDB } from './utils/db';
 import minesRoutes from './routes/mines';
+import userRoutes from './routes/user';
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/games/mines', minesRoutes);
+app.use('/api/user', userRoutes);
 
 // Database connection
 connectDB()

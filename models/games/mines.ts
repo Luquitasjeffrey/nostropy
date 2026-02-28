@@ -12,7 +12,9 @@ import { ServerSeed } from '../../utils/game_seed';
 
 export interface IMinesGame extends Document {
   // Player identifier (Nostr public key or user ID)
-  player_pubkey: string;
+  player_pubkey?: string;
+  user_id: mongoose.Types.ObjectId;
+  currency_id: mongoose.Types.ObjectId;
 
   mines_count: number; // number of bombs on board
 
@@ -57,6 +59,17 @@ const MinesGameSchema = new Schema<IMinesGame>(
       type: String,
       required: false,
       index: true,
+    },
+    user_id: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true,
+    },
+    currency_id: {
+      type: Schema.Types.ObjectId,
+      ref: 'Cryptocurrency',
+      required: true,
     },
     mines_count: {
       type: Number,

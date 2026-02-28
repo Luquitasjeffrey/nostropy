@@ -1,7 +1,10 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
+import { AuthenticatedRequest } from '../types/express';
 import { connectDB } from '../utils/db';
 import MinesGame from '../models/games/mines';
+import Cryptocurrency from '../models/cryptocurrency';
 import { generateServerSeed, generateGameSeed, GameSeed } from '../utils/game_seed';
+import { updateUserBalance } from '../utils/user_balance';
 
 const MINES_HOUSE_EDGE = Number(process.env.MINES_HOUSE_EDGE) || 0.01; // 1% default
 
@@ -14,9 +17,9 @@ function getMultiplier(revealedCount: number, minesCount: number) {
   return multiplier;
 }
 
-export const newGame = async (req: Request, res: Response): Promise<void> => {
+export const newGame = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    const { wagerAmount, playerPubkey, minesCount } = req.body;
+    const { wagerAmount, playerPubkey, minesCount, currencySymbol = 'USD' } = req.body;
 
     if (!wagerAmount || !playerPubkey || !minesCount) {
       res.status(400).json({ error: 'Missing wagerAmount or playerPubkey or minesCount' });
@@ -24,12 +27,30 @@ export const newGame = async (req: Request, res: Response): Promise<void> => {
     }
 
     await connectDB();
+    const user = req.user!;
+
+    // 2. Find Cryptocurrency
+    const currency = await Cryptocurrency.findOne({ symbol: currencySymbol });
+    if (!currency) {
+      res.status(400).json({ error: `Currency ${currencySymbol} not supported` });
+      return;
+    }
+
+    // 3. Deduct Balance (Wager)
+    try {
+      await updateUserBalance(user._id as any, currency.symbol, -wagerAmount);
+    } catch (err: any) {
+      res.status(400).json({ error: err.message || 'Insufficient balance' });
+      return;
+    }
+
     const serverSeed = generateServerSeed();
 
     const game = new MinesGame({
       player_pubkey: playerPubkey,
+      user_id: user._id,
+      currency_id: currency._id,
       wager_amount: wagerAmount,
-      potentialPayout: wagerAmount,
       board_state: {
         cell_types: Array(25).fill('gem'),
         revealed_indices: [],
@@ -47,7 +68,7 @@ export const newGame = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const setClientSeed = async (req: Request, res: Response): Promise<void> => {
+export const setClientSeed = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const { playerPubkey, gameId, clientSeed } = req.body;
 
@@ -62,7 +83,10 @@ export const setClientSeed = async (req: Request, res: Response): Promise<void> 
       res.status(404).json({ error: 'Game not found' });
       return;
     }
-    if (game.player_pubkey !== playerPubkey) {
+    if (
+      game.player_pubkey !== playerPubkey ||
+      game.user_id.toString() !== req.user?._id.toString()
+    ) {
       res.status(403).json({ error: 'Unauthorized' });
       return;
     }
@@ -71,7 +95,7 @@ export const setClientSeed = async (req: Request, res: Response): Promise<void> 
       return;
     }
 
-    const serverSeedValue = game.server_seed?.seed || '';
+    const serverSeedValue = game.server_seed.seed;
     const finalSeed = generateGameSeed(clientSeed, serverSeedValue);
     const rng = new GameSeed(finalSeed);
 
@@ -100,7 +124,7 @@ export const setClientSeed = async (req: Request, res: Response): Promise<void> 
   }
 };
 
-export const revealOne = async (req: Request, res: Response): Promise<void> => {
+export const revealOne = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const { playerPubkey, gameId, index } = req.body;
 
@@ -115,7 +139,10 @@ export const revealOne = async (req: Request, res: Response): Promise<void> => {
       res.status(404).json({ error: 'Game not found' });
       return;
     }
-    if (game.player_pubkey !== playerPubkey) {
+    if (
+      game.player_pubkey !== playerPubkey ||
+      game.user_id.toString() !== req.user?._id.toString()
+    ) {
       res.status(403).json({ error: 'Unauthorized' });
       return;
     }
@@ -159,7 +186,7 @@ export const revealOne = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const cashOut = async (req: Request, res: Response): Promise<void> => {
+export const cashOut = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
     const { playerPubkey, gameId } = req.body;
 
@@ -169,12 +196,17 @@ export const cashOut = async (req: Request, res: Response): Promise<void> => {
     }
 
     await connectDB();
-    const game = await MinesGame.findById(gameId);
+    const game = await MinesGame.findById(gameId).populate('currency_id');
     if (!game) {
       res.status(404).json({ error: 'Game not found' });
       return;
     }
-    if (game.player_pubkey !== playerPubkey) {
+
+    // Internal user_id check (ideal) or pubkey check (current frontend logic)
+    if (
+      game.player_pubkey !== playerPubkey ||
+      game.user_id.toString() !== req.user?._id.toString()
+    ) {
       res.status(403).json({ error: 'Unauthorized' });
       return;
     }
@@ -188,10 +220,14 @@ export const cashOut = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const payout = game.wager_amount * game.current_multiplier;
+    const payout = Math.floor(game.wager_amount * game.current_multiplier);
     game.status = 'CASHED_OUT';
     game.completed_at = new Date();
     await game.save();
+
+    // Credit Balance (Payout)
+    const currency = game.currency_id as any;
+    await updateUserBalance(game.user_id, currency.symbol, payout);
 
     res.status(200).json({
       success: true,

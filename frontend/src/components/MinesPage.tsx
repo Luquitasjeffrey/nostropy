@@ -7,11 +7,17 @@ import { Modal } from './ui/Modal';
 
 interface MinesPageProps {
   playerPubkey: string;
-  balance: number;
-  setBalance: React.Dispatch<React.SetStateAction<number>>;
+  currencySymbol: string;
+  price: number;
+  onGameEnd: () => void;
 }
 
-export default function MinesPage({ playerPubkey, balance, setBalance }: MinesPageProps) {
+export default function MinesPage({
+  playerPubkey,
+  currencySymbol,
+  price,
+  onGameEnd,
+}: MinesPageProps) {
   const [wager, setWager] = useState(10);
   const [gameId, setGameId] = useState<string | null>(null);
   const [serverSeedHash, setServerSeedHash] = useState<string | null>(null);
@@ -54,10 +60,24 @@ export default function MinesPage({ playerPubkey, balance, setBalance }: MinesPa
     setServerSeedHash(null);
     setServerSeedShown(null);
 
+    // 2. Convert to smallest unit: crypto amount * 10^decimals
+    const decimals = currencySymbol === 'BTC' ? 8 : 6;
+    const cryptoAmount = wager / price;
+    const wagerInt = Math.floor(cryptoAmount * Math.pow(10, decimals));
+
+    console.log(
+      `Starting game with USD: $${wager}, Crypto Symbol: ${currencySymbol}, Price: ${price}, Crypto Amount: ${cryptoAmount}, Wager Int (smallest units): ${wagerInt}`
+    );
+
     const res = await fetch(`${API_URL}/games/mines/new`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ playerPubkey, wagerAmount: wager, minesCount }),
+      body: JSON.stringify({
+        playerPubkey,
+        wagerAmount: wagerInt,
+        minesCount,
+        currencySymbol,
+      }),
     });
     const data = await res.json();
     if (res.ok) {
@@ -72,9 +92,8 @@ export default function MinesPage({ playerPubkey, balance, setBalance }: MinesPa
         )
         .join('');
       setClientSeed(rand);
-      localStorage.setItem('clientSeed', rand); // immediately store the new random seed
-      setBalance((b) => b - wager);
-      localStorage.setItem('balance', (balance - wager).toString());
+      localStorage.setItem('clientSeed', rand);
+      onGameEnd(); // Refresh balance after wager deduction
     } else {
       alert(data.error || 'error starting game');
     }
@@ -119,6 +138,7 @@ export default function MinesPage({ playerPubkey, balance, setBalance }: MinesPa
       setBoardAnswer(data.board);
       if (data.clickedIndices) setClickedIndices(data.clickedIndices);
       if (data.serverSeed) setServerSeedShown(data.serverSeed.seed || data.serverSeed);
+      onGameEnd(); // Balance doesn't change on loss (already deducted), but good to sync
     }
   }
 
@@ -132,13 +152,16 @@ export default function MinesPage({ playerPubkey, balance, setBalance }: MinesPa
     const data = await res.json();
     if (res.ok && data.success) {
       setStatus('cashed');
-      setPayout(data.payout);
+      // The backend returns payout in smallest crypto units. Convert back to USD for display.
+      const decimals = currencySymbol === 'BTC' ? 8 : 6;
+      const cryptoPayout = data.payout / Math.pow(10, decimals);
+      const usdPayout = cryptoPayout * price;
+      setPayout(usdPayout);
       setBoardAnswer(data.board);
       if (data.clickedIndices) setClickedIndices(data.clickedIndices);
       setServerSeedHash(null);
       setServerSeedShown(data.serverSeed?.seed || '');
-      setBalance((b) => b + data.payout);
-      localStorage.setItem('balance', (balance + data.payout).toString());
+      onGameEnd(); // Refresh balance after payout
     } else {
       alert(data.error || 'error cashing out');
     }
