@@ -22,6 +22,7 @@ export const getBalance = async (req: Request, res: Response): Promise<void> => 
         return {
           symbol: currency?.symbol,
           name: currency?.name,
+          image: currency?.image,
           amount: b.amount,
           decimal_places: currency?.decimal_places,
         };
