@@ -1,0 +1,7 @@
+node_modules
+mongodb
+dist
+build
+.next
+.git
+package-lock.json

@@ -3,7 +3,7 @@ import crypto from 'crypto';
 export interface ServerSeed {
   seed: string;
   hash: string;
-};
+}
 
 export function generateServerSeed(): ServerSeed {
   const seed = crypto.randomBytes(32).toString('hex');
@@ -22,11 +22,11 @@ export function generateGameSeed(clientSeed: string, serverSeed: string) {
 
 /**
  * GameSeed - Deterministic Pseudo-Random Number Generator
- * 
+ *
  * Uses SHA256 to generate a chain of deterministic random values
  * from an initial seed. This ensures fair randomness that can be
  * verified by the player using the same seed.
- * 
+ *
  * Seed must be a 64-character hexadecimal string (32 bytes / 256 bits).
  */
 export class GameSeed {
@@ -38,7 +38,7 @@ export class GameSeed {
     if (!/^[a-f0-9]{64}$/i.test(seed)) {
       throw new Error('Seed must be a 64-character hexadecimal string (32 bytes)');
     }
-    this.seed = seed
+    this.seed = seed;
   }
 
   /**
@@ -106,7 +106,7 @@ export class GameSeed {
     const array = [...input];
     for (let i = array.length - 1; i > 0; i--) {
       // Use nextInt() modulo (i+1) to get random index in [0, i]
-      
+
       const jBig = this.nextBigInt() % (BigInt(i) + 1n);
       const j = Number(jBig);
       // Swap elements

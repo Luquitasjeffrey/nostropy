@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
-import { MinesGrid, type GameStatus, type CellAnswer } from "./mines/MinesGrid";
-import { MinesControls } from "./mines/MinesControls";
-import { Copy, KeyRound, Dices, ShieldCheck } from "lucide-react";
-import { Input } from "./ui/Input";
-import { motion } from "framer-motion";
-import { Modal } from "./ui/Modal";
+import { useState, useEffect } from 'react';
+import { MinesGrid, type GameStatus, type CellAnswer } from './mines/MinesGrid';
+import { MinesControls } from './mines/MinesControls';
+import { Copy, KeyRound, Dices, ShieldCheck } from 'lucide-react';
+import { Input } from './ui/Input';
+import { motion } from 'framer-motion';
+import { Modal } from './ui/Modal';
 
 export default function MinesPage() {
   const [playerPubkey, setPlayerPubkey] = useState('');
@@ -21,7 +21,6 @@ export default function MinesPage() {
     navigator.clipboard.writeText(text);
   };
 
-
   const [status, setStatus] = useState<GameStatus>('initial');
   const [isFairnessModalOpen, setIsFairnessModalOpen] = useState(false);
 
@@ -36,6 +35,7 @@ export default function MinesPage() {
   }, []);
 
   const [revealedIndices, setRevealedIndices] = useState<number[]>([]);
+  const [clickedIndices, setClickedIndices] = useState<number[]>([]);
   const [multiplier, setMultiplier] = useState(1);
   const [payout, setPayout] = useState<number | null>(null);
   const [boardAnswer, setBoardAnswer] = useState<CellAnswer[] | null>(null);
@@ -49,6 +49,7 @@ export default function MinesPage() {
 
     // Reset state for new round
     setRevealedIndices([]);
+    setClickedIndices([]);
     setBoardAnswer(null);
     setMultiplier(1);
     setPayout(null);
@@ -66,7 +67,11 @@ export default function MinesPage() {
       setServerSeedHash(data.serverSeedHash);
       setStatus('waiting');
       const rand = Array.from({ length: 16 })
-        .map(() => Math.floor(Math.random() * 256).toString(16).padStart(2, '0'))
+        .map(() =>
+          Math.floor(Math.random() * 256)
+            .toString(16)
+            .padStart(2, '0')
+        )
         .join('');
       setClientSeed(rand);
       localStorage.setItem('clientSeed', rand); // immediately store the new random seed
@@ -114,6 +119,7 @@ export default function MinesPage() {
     } else {
       setStatus('lost');
       setBoardAnswer(data.board);
+      if (data.clickedIndices) setClickedIndices(data.clickedIndices);
       if (data.serverSeed) setServerSeedShown(data.serverSeed.seed || data.serverSeed);
     }
   }
@@ -130,6 +136,7 @@ export default function MinesPage() {
       setStatus('cashed');
       setPayout(data.payout);
       setBoardAnswer(data.board);
+      if (data.clickedIndices) setClickedIndices(data.clickedIndices);
       setServerSeedHash(null);
       setServerSeedShown(data.serverSeed?.seed || '');
       setBalance((b) => b + data.payout);
@@ -143,7 +150,6 @@ export default function MinesPage() {
 
   return (
     <div className="w-full max-w-6xl mx-auto flex flex-col items-center justify-center p-4">
-
       {/* Top Navbar / State info */}
       <div className="w-full mb-6 flex items-center justify-between border-b-2 border-panel pb-4">
         <div className="flex items-center space-x-2 text-primary font-bold text-2xl">
@@ -153,7 +159,7 @@ export default function MinesPage() {
         <div className="flex space-x-4">
           <Input
             value={playerPubkey}
-            onChange={e => setPlayerPubkey(e.target.value)}
+            onChange={(e) => setPlayerPubkey(e.target.value)}
             placeholder="Pubkey ID"
             icon={<KeyRound size={16} />}
             className="w-40"
@@ -167,7 +173,6 @@ export default function MinesPage() {
 
       {/* Main Game Interface Layout */}
       <div className="flex flex-col lg:flex-row w-full bg-[#0f212e] rounded-xl overflow-hidden shadow-2xl">
-
         {/* Left Sidebar: Controls */}
         <div className="lg:w-80 border-r-2 border-panel bg-panel shrink-0">
           <MinesControls
@@ -186,10 +191,11 @@ export default function MinesPage() {
 
         {/* Right Area: Game Board */}
         <div className="flex-1 p-8 flex flex-col items-center justify-center bg-background min-h-[500px]">
-
           {/* End Game / Win State Overlays */}
           {(status === 'cashed' || status === 'lost') && (
-            <div className={`mb-6 p-4 w-full max-w-[500px] text-center rounded-lg flex flex-col items-center shadow-lg border-2 ${status === 'cashed' ? 'border-primary bg-primary/10 text-primary' : 'border-danger bg-danger/10 text-danger'} `}>
+            <div
+              className={`mb-6 p-4 w-full max-w-[500px] text-center rounded-lg flex flex-col items-center shadow-lg border-2 ${status === 'cashed' ? 'border-primary bg-primary/10 text-primary' : 'border-danger bg-danger/10 text-danger'} `}
+            >
               <span className="text-lg font-bold">
                 {status === 'cashed' ? 'You Won!' : 'You Hit a Bomb!'}
               </span>
@@ -218,6 +224,7 @@ export default function MinesPage() {
           <MinesGrid
             status={status}
             revealedIndices={revealedIndices}
+            clickedIndices={clickedIndices}
             boardAnswer={boardAnswer}
             onReveal={revealCell}
           />
@@ -240,39 +247,75 @@ export default function MinesPage() {
               >
                 <div className="text-sm text-gray-400 flex flex-col space-y-5">
                   <div className="flex flex-col space-y-1">
-                    <span className="text-[10px] uppercase tracking-wider font-bold text-gray-500">Game ID</span>
+                    <span className="text-[10px] uppercase tracking-wider font-bold text-gray-500">
+                      Game ID
+                    </span>
                     <div className="flex items-center justify-between bg-background p-3 rounded-lg border border-[#1a2d37]">
-                      <span className="text-gray-300 font-mono text-xs truncate max-w-[240px]">{gameId}</span>
-                      <button onClick={() => copyText(gameId)} className="hover:text-primary transition-colors ml-2"><Copy size={14} /></button>
+                      <span className="text-gray-300 font-mono text-xs truncate max-w-[240px]">
+                        {gameId}
+                      </span>
+                      <button
+                        onClick={() => copyText(gameId)}
+                        className="hover:text-primary transition-colors ml-2"
+                      >
+                        <Copy size={14} />
+                      </button>
                     </div>
                   </div>
 
                   {clientSeed && (
                     <div className="flex flex-col space-y-1">
-                      <span className="text-[10px] uppercase tracking-wider font-bold text-gray-500">Client Seed</span>
+                      <span className="text-[10px] uppercase tracking-wider font-bold text-gray-500">
+                        Client Seed
+                      </span>
                       <div className="flex items-center justify-between bg-background p-3 rounded-lg border border-[#1a2d37]">
-                        <span className="text-gray-300 font-mono text-xs truncate max-w-[240px]">{clientSeed}</span>
-                        <button onClick={() => copyText(clientSeed)} className="hover:text-primary transition-colors ml-2"><Copy size={14} /></button>
+                        <span className="text-gray-300 font-mono text-xs truncate max-w-[240px]">
+                          {clientSeed}
+                        </span>
+                        <button
+                          onClick={() => copyText(clientSeed)}
+                          className="hover:text-primary transition-colors ml-2"
+                        >
+                          <Copy size={14} />
+                        </button>
                       </div>
                     </div>
                   )}
 
                   {serverSeedHash && (
                     <div className="flex flex-col space-y-1">
-                      <span className="text-[10px] uppercase tracking-wider font-bold text-gray-500">Server Seed Hash</span>
+                      <span className="text-[10px] uppercase tracking-wider font-bold text-gray-500">
+                        Server Seed Hash
+                      </span>
                       <div className="flex items-center justify-between bg-background p-3 rounded-lg border border-[#1a2d37]">
-                        <span className="text-gray-300 font-mono text-xs truncate max-w-[240px]">{serverSeedHash}</span>
-                        <button onClick={() => copyText(serverSeedHash)} className="hover:text-primary transition-colors ml-2"><Copy size={14} /></button>
+                        <span className="text-gray-300 font-mono text-xs truncate max-w-[240px]">
+                          {serverSeedHash}
+                        </span>
+                        <button
+                          onClick={() => copyText(serverSeedHash)}
+                          className="hover:text-primary transition-colors ml-2"
+                        >
+                          <Copy size={14} />
+                        </button>
                       </div>
                     </div>
                   )}
 
                   {serverSeedShown && (
                     <div className="flex flex-col space-y-1 border-t border-[#1a2d37] pt-4 mt-2">
-                      <span className="text-[10px] uppercase tracking-wider font-bold text-primary">Server Seed (Revealed)</span>
+                      <span className="text-[10px] uppercase tracking-wider font-bold text-primary">
+                        Server Seed (Revealed)
+                      </span>
                       <div className="flex items-center justify-between bg-background p-3 rounded-lg border border-primary/30">
-                        <span className="text-gray-300 font-mono text-xs break-all">{serverSeedShown}</span>
-                        <button onClick={() => copyText(serverSeedShown)} className="hover:text-primary transition-colors ml-2 shrink-0"><Copy size={14} /></button>
+                        <span className="text-gray-300 font-mono text-xs break-all">
+                          {serverSeedShown}
+                        </span>
+                        <button
+                          onClick={() => copyText(serverSeedShown)}
+                          className="hover:text-primary transition-colors ml-2 shrink-0"
+                        >
+                          <Copy size={14} />
+                        </button>
                       </div>
                     </div>
                   )}
@@ -285,7 +328,6 @@ export default function MinesPage() {
             </div>
           )}
         </div>
-
       </div>
     </div>
   );
