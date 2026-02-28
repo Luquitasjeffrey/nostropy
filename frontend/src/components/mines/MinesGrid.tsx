@@ -53,7 +53,10 @@ export function MinesGrid({ status, revealedIndices, boardAnswer, onReveal }: Mi
 									<Diamond className="w-8 h-8 md:w-12 md:h-12 text-primary fill-primary/20" />
 								)}
 								{answer === 'bomb' && (
-									<Bomb className="w-8 h-8 md:w-12 md:h-12 text-white fill-white" />
+									<Bomb className={cn(
+										"w-8 h-8 md:w-12 md:h-12",
+										userRevealed ? "text-white fill-white" : "text-danger fill-danger/20"
+									)} />
 								)}
 							</motion.div>
 						)}
