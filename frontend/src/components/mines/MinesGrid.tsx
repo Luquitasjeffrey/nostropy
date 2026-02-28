@@ -32,11 +32,10 @@ export function MinesGrid({
 				// Determine if it was revealed by user or just shown at end game
 				const wasClicked = clickedIndices.includes(i);
 
-
-				console.log('Index: ', i)
-				console.log('isRevealed: ', isRevealed)
-				console.log('isClicked: ', clickedIndices.includes(i))
-				console.log('has background: ', (!isRevealed || (gameCompleted && wasClicked)));
+				console.log('Index: ', i);
+				console.log('isRevealed: ', isRevealed);
+				console.log('isClicked: ', clickedIndices.includes(i));
+				console.log('has background: ', !isRevealed || (gameCompleted && wasClicked));
 				console.log('---');
 
 				return (
@@ -62,7 +61,7 @@ export function MinesGrid({
 							'bg-[#0f212e] border-2 border-[#1a2d37] opacity-40'
 						)}
 						style={{
-							backgroundColor: clickedIndices.includes(i) ? '#213743' : undefined,
+							backgroundColor: wasClicked ? (answer === 'bomb' ? '#ff4c4c' : '#213743') : undefined,
 						}}
 					>
 						{isRevealed && (
