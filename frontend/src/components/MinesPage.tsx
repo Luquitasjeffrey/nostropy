@@ -7,17 +7,19 @@ import { Modal } from './ui/Modal';
 
 interface MinesPageProps {
   playerPubkey: string;
-  currencySymbol: string;
-  price: number;
+  allBalances: any[];
+  prices: Record<string, number>;
   onGameEnd: () => void;
 }
 
 export default function MinesPage({
   playerPubkey,
-  currencySymbol,
-  price,
+  allBalances,
+  prices,
   onGameEnd,
 }: MinesPageProps) {
+  const [currencySymbol, setCurrencySymbol] = useState('BTC');
+  const price = prices[currencySymbol] || 1;
   const [wager, setWager] = useState(10);
   const [gameId, setGameId] = useState<string | null>(null);
   const [serverSeedHash, setServerSeedHash] = useState<string | null>(null);
@@ -194,6 +196,10 @@ export default function MinesPage({
             multiplier={multiplier}
             canCash={canCash}
             payout={payout}
+            currencySymbol={currencySymbol}
+            setCurrencySymbol={setCurrencySymbol}
+            allBalances={allBalances}
+            prices={prices}
           />
         </div>
 
