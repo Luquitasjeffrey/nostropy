@@ -9,6 +9,8 @@ interface DicePageProps {
   onGameEnd: () => void;
 }
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 export default function DicePage({
   playerPubkey,
   allBalances,
@@ -20,7 +22,6 @@ export default function DicePage({
 
   // Game state
   const [status, setStatus] = useState<'initial' | 'waiting' | 'finished'>('initial');
-  const [payout, setPayout] = useState<number | null>(null);
 
   // Dice state
   const [target, setTarget] = useState<number>(50); // Roll over target
@@ -61,30 +62,62 @@ export default function DicePage({
   };
 
   const startGame = async () => {
+    if (!playerPubkey || wager <= 0) return;
+
     setStatus('waiting');
-    setPayout(null);
     setRollResult(null);
 
-    // TODO: implement backend integrations (api/games/dice/...)
-    // Mock flow for now:
     try {
+      const price = prices[currencySymbol] || 1;
+      const cryptoAmount = wager / price;
+      const wagerInt = Math.floor(cryptoAmount * 100000000); // 8 decimals
+
       // 1. POST /api/games/dice/new
-      // returns gameId, serverSeedHash
+      const newResponse = await fetch(`${API_URL}/api/games/dice/new`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          playerPubkey,
+          wagerAmount: wagerInt,
+          currencySymbol,
+          userNumber: target,
+        }),
+      });
 
-      // 2. Add delay to mock network request
-      await new Promise((res) => setTimeout(res, 500));
-
-      // 3. POST /api/games/dice/set_client_seed
-      // returns randomNumber, payout
-
-      const mockedResult = parseFloat((Math.random() * 100).toFixed(2));
-      setRollResult(mockedResult);
-
-      setStatus('finished');
-      if (mockedResult >= target) {
-        setPayout(wager * multiplier);
-        onGameEnd();
+      const newData = await newResponse.json();
+      if (!newResponse.ok) {
+        throw new Error(newData.error || 'Failed to start game');
       }
+
+      // Update balance globally (wager deducted)
+      onGameEnd();
+
+      // Add delay for dramatics
+      await new Promise((res) => setTimeout(res, 600));
+
+      // 2. POST /api/games/dice/set_client_seed
+      const clientSeed = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const revealResponse = await fetch(`${API_URL}/api/games/dice/set_client_seed`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          playerPubkey,
+          gameId: newData.gameId,
+          clientSeed,
+        }),
+      });
+
+      const revealData = await revealResponse.json();
+      if (!revealResponse.ok) {
+        throw new Error(revealData.error || 'Failed to reveal game');
+      }
+
+      setRollResult(revealData.roll_number);
+      setStatus('finished');
+
+      // Update balance globally (payout credited if won)
+      onGameEnd();
+
     } catch (err) {
       console.error(err);
       setStatus('initial');

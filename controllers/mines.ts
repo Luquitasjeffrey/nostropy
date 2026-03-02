@@ -19,7 +19,7 @@ function getMultiplier(revealedCount: number, minesCount: number) {
 
 export const newGame = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
 	try {
-		const { wagerAmount, playerPubkey, minesCount, currencySymbol = 'USD' } = req.body;
+		const { wagerAmount, playerPubkey, minesCount, currencySymbol = 'BTC' } = req.body;
 
 		if (!wagerAmount || !playerPubkey || !minesCount) {
 			res.status(400).json({ error: 'Missing wagerAmount or playerPubkey or minesCount' });
