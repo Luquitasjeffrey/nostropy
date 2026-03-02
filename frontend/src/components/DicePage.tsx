@@ -19,7 +19,7 @@ export default function DicePage({
   const [wager, setWager] = useState(10);
 
   // Game state
-  const [status, setStatus] = useState<'initial' | 'waiting' | 'active' | 'finished'>('initial');
+  const [status, setStatus] = useState<'initial' | 'waiting' | 'finished'>('initial');
   const [payout, setPayout] = useState<number | null>(null);
 
   // Dice state
@@ -91,7 +91,7 @@ export default function DicePage({
     }
   };
 
-  const isPlaying = status === 'active' || status === 'waiting';
+  const isPlaying = status === 'waiting';
   const hasWon = rollResult !== null && rollResult >= target;
 
   return (
