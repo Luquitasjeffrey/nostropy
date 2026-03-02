@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MinesGrid, type GameStatus, type CellAnswer } from './mines/MinesGrid';
 import { MinesControls } from './mines/MinesControls';
-import { Copy, ShieldCheck, Dices } from 'lucide-react';
+import { Copy, ShieldCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Modal } from './ui/Modal';
 
@@ -173,14 +173,6 @@ export default function MinesPage({
 
   return (
     <div className="w-full max-w-6xl mx-auto flex flex-col items-center justify-center p-4">
-      {/* Game Identity Sub-header */}
-      <div className="w-full mb-4 flex items-center space-x-2 px-2">
-        <Dices className="w-5 h-5 text-primary drop-shadow-[0_0_5px_rgba(0,231,1,0.5)]" />
-        <span className="text-gray-400 font-bold text-sm uppercase tracking-widest">
-          Playing: <span className="text-white">Mines</span>
-        </span>
-      </div>
-
       {/* Main Game Interface Layout */}
       <div className="flex flex-col lg:flex-row w-full bg-[#0f212e] rounded-xl overflow-hidden shadow-2xl">
         {/* Left Sidebar: Controls */}

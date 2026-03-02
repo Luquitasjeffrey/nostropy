@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import MinesPage from './components/MinesPage';
-import { KeyRound } from 'lucide-react';
+import DicePage from './components/DicePage';
+import { KeyRound, Pickaxe, Dices } from 'lucide-react';
 import { Input } from './components/ui/Input';
 import logoImg from './assets/logo.png';
 
@@ -10,6 +11,7 @@ function App() {
   const [playerPubkey, setPlayerPubkey] = useState('');
   const [allBalances, setAllBalances] = useState<any[]>([]);
   const [prices, setPrices] = useState<Record<string, number>>({ BTC: 60000, USDT: 1 }); // Reasonable defaults
+  const [currentGame, setCurrentGame] = useState<'MINES' | 'DICE'>('DICE');
 
   useEffect(() => {
     const storedPub = localStorage.getItem('playerPubkey');
@@ -104,13 +106,46 @@ function App() {
         </div>
       </header>
 
+      {/* Game Tabs */}
+      <div className="w-full max-w-6xl mx-auto px-4 mt-8 flex space-x-4">
+        <button
+          onClick={() => setCurrentGame('DICE')}
+          className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'DICE'
+              ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
+              : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
+            }`}
+        >
+          <Dices size={20} />
+          <span>Satoshi Dice</span>
+        </button>
+        <button
+          onClick={() => setCurrentGame('MINES')}
+          className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'MINES'
+              ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
+              : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
+            }`}
+        >
+          <Pickaxe size={20} />
+          <span>Mines</span>
+        </button>
+      </div>
+
       <main className="w-full flex-1 py-12">
-        <MinesPage
-          playerPubkey={playerPubkey}
-          allBalances={allBalances}
-          prices={prices}
-          onGameEnd={() => fetchBalance(playerPubkey)}
-        />
+        {currentGame === 'MINES' ? (
+          <MinesPage
+            playerPubkey={playerPubkey}
+            allBalances={allBalances}
+            prices={prices}
+            onGameEnd={() => fetchBalance(playerPubkey)}
+          />
+        ) : (
+          <DicePage
+            playerPubkey={playerPubkey}
+            allBalances={allBalances}
+            prices={prices}
+            onGameEnd={() => fetchBalance(playerPubkey)}
+          />
+        )}
       </main>
     </div>
   );
