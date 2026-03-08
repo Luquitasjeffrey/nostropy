@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from './ui/Button';
 import { WagerInput } from './ui/WagerInput';
+import { ProvablyFair } from './ui/ProvablyFair';
 
 interface DicePageProps {
   playerPubkey: string;
@@ -23,6 +24,11 @@ export default function DicePage({
   // Game state
   const [status, setStatus] = useState<'initial' | 'waiting' | 'finished'>('initial');
   const [payout, setPayout] = useState<number | null>(null);
+
+  const [gameId, setGameId] = useState<string | null>(null);
+  const [clientSeed, setClientSeed] = useState<string | null>(null);
+  const [serverSeedHash, setServerSeedHash] = useState<string | null>(null);
+  const [serverSeedShown, setServerSeedShown] = useState<string | null>(null);
 
   // Dice state
   const [target, setTarget] = useState<number>(50); // Roll over target
@@ -91,6 +97,10 @@ export default function DicePage({
         throw new Error(newData.error || 'Failed to start game');
       }
 
+      setGameId(newData.gameId);
+      setServerSeedHash(newData.serverSeedHash);
+      setServerSeedShown(null);
+
       // Update balance globally (wager deducted)
       onGameEnd();
 
@@ -98,14 +108,15 @@ export default function DicePage({
       await new Promise((res) => setTimeout(res, 600));
 
       // 2. POST /api/games/dice/set_client_seed
-      const clientSeed = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const newClientSeed = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      setClientSeed(newClientSeed);
       const revealResponse = await fetch(`${API_URL}/api/games/dice/set_client_seed`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           playerPubkey,
           gameId: newData.gameId,
-          clientSeed,
+          clientSeed: newClientSeed,
         }),
       });
 
@@ -114,6 +125,7 @@ export default function DicePage({
         throw new Error(revealData.error || 'Failed to reveal game');
       }
 
+      setServerSeedShown(revealData.serverSeed?.seed || revealData.serverSeed || '');
       setRollResult(revealData.roll_number);
       setStatus('finished');
 
@@ -294,6 +306,12 @@ export default function DicePage({
           </div>
 
         </div>
+        <ProvablyFair
+          gameId={gameId}
+          clientSeed={clientSeed}
+          serverSeedHash={serverSeedHash}
+          serverSeedShown={serverSeedShown}
+        />
       </div>
     </div>
   );
