@@ -78,7 +78,8 @@ export default function DicePage({
     try {
       const price = prices[currencySymbol] || 1;
       const cryptoAmount = wager / price;
-      const wagerInt = Math.floor(cryptoAmount * 100000000); // 8 decimals
+      const decimals = currencySymbol == 'BTC' ? 8 : 6;
+      const wagerInt = Math.floor(cryptoAmount * Math.pow(10, decimals));
 
       // 1. POST /api/games/dice/new
       const newResponse = await fetch(`${API_URL}/api/games/dice/new`, {
