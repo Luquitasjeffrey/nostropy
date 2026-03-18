@@ -1,0 +1,18 @@
+--- App.tsx
++++ App.tsx
+@@ -48,6 +48,15 @@
+       const data = await response.json();
+       if (data.balances) {
+         setAllBalances(data.balances);
++      } else {
++        // Fallback for testing
++        setAllBalances([{
++            symbol: 'BTC',
++            amount: 100000000, // 1 BTC
++            decimal_places: 8,
++            _id: 'test'
++        }]);
+       }
+     } catch (err) {
+       console.error('Failed to fetch balance:', err);
++      setAllBalances([{

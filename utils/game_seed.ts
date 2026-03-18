@@ -41,6 +41,10 @@ export class GameSeed {
     this.seed = seed;
   }
 
+  setNonce(nonce: number) {
+    this.nonce = BigInt(nonce);
+  }
+
   /**
    * Generate next SHA256 hash using current seed and incrementing nonce.
    * Process:
