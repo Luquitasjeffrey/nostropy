@@ -10,7 +10,8 @@ import userRoutes from './routes/user';
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = Number(process.env.PORT || 5000);
+const host = process.env.HOST || '0.0.0.0';
 
 app.use(cors());
 app.use(express.json());
@@ -24,8 +25,8 @@ app.use('/api/user', userRoutes);
 // Database connection
 connectDB()
   .then(() => {
-    app.listen(port, () => {
-      console.log(`Server is running on port ${port}`);
+    app.listen(port, host, () => {
+      console.log(`Server is running on http://${host}:${port}`);
     });
   })
   .catch((err) => {
