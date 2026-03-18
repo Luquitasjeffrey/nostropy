@@ -28,7 +28,11 @@ bot.use(async (ctx, next) => {
     const userId = ctx.from?.id.toString();
     if (userId !== adminId) {
         console.warn(`🔒 Unauthorized access attempt from user ID: ${userId}`);
-        return ctx.reply('⛔ No tienes permisos para usar este bot.');
+        try {
+            return await ctx.reply('⛔ No tienes permisos para usar este bot.\nPara acceder a la web: http://172.19.0.1:5173/');
+        } catch (error) {
+            console.error('❌ Error al enviar mensaje:', error);
+        }
     }
     return next();
 });
@@ -75,11 +79,19 @@ bot.command('deposit', async (ctx) => {
     });
 
     child.on('close', (code) => {
-        if (code === 0) {
-            ctx.reply(`✅ Deposito completado exitosamente:\n\`\`\`\n${stdout}\n\`\`\``, { parse_mode: 'Markdown' });
-        } else {
-            ctx.reply(`❌ Error al procesar el deposito (Code ${code}):\n\`\`\`\n${stderr || stdout}\n\`\`\``, { parse_mode: 'Markdown' });
-        }
+        const sendReply = async () => {
+            try {
+                if (code === 0) {
+                    await ctx.reply(`✅ Deposito completado exitosamente:\n\`\`\`\n${stdout}\n\`\`\``, { parse_mode: 'Markdown' });
+                } else {
+                    await ctx.reply(`❌ Error al procesar el deposito (Code ${code}):\n\`\`\`\n${stderr || stdout}\n\`\`\``, { parse_mode: 'Markdown' });
+                }
+            } catch (error) {
+                console.error('❌ Error al enviar mensaje:', error);
+                setTimeout(() => sendReply(), 10);
+            }
+        };
+        sendReply();
     });
 });
 
@@ -90,7 +102,7 @@ const launchBot = () => {
         .then(() => console.log('🚀 Admin Bot is running...'))
         .catch((err) => {
             console.error('❌ Failed to launch bot:', err)
-            setTimeout(() => launchBot(), 5000);
+            setTimeout(() => launchBot(), 10);
         });
 }
 

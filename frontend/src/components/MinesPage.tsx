@@ -4,6 +4,8 @@ import { MinesControls } from './mines/MinesControls';
 import { motion } from 'framer-motion';
 import { ProvablyFair } from './ui/ProvablyFair';
 
+import { API_URL as BASE_API_URL } from '../config';
+
 interface MinesPageProps {
   playerPubkey: string;
   allBalances: any[];
@@ -17,6 +19,7 @@ export default function MinesPage({
   prices,
   onGameEnd,
 }: MinesPageProps) {
+  const API_URL = `${BASE_API_URL}/api`;
   const [currencySymbol, setCurrencySymbol] = useState('BTC');
   const price = prices[currencySymbol] || 1;
   const [wager, setWager] = useState(10);
@@ -38,8 +41,6 @@ export default function MinesPage({
   const [multiplier, setMultiplier] = useState(1);
   const [payout, setPayout] = useState<number | null>(null);
   const [boardAnswer, setBoardAnswer] = useState<CellAnswer[] | null>(null);
-
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   async function startGame() {
     if (!playerPubkey || wager <= 0) return;

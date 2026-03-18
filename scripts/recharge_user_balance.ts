@@ -30,8 +30,8 @@ const rechargeUserBalance = async () => {
     }
 
     if (!user) {
-      console.error(`❌ User not found with ID or Pubkey: ${identifier}`);
-      process.exit(1);
+      console.log(`👤 User not found. Creating new user with pubkey: ${identifier}`);
+      user = await mongoose.model('User').create({ pubkey: identifier, balances: [] });
     }
 
     console.log(`👤 Recharging balances for user: ${user.pubkey} (${user._id})`);
