@@ -89,7 +89,7 @@ function App() {
             }}
             placeholder="Pubkey ID"
             icon={<KeyRound size={16} />}
-            className="w-48 hidden md:flex"
+            className="w-32 md:w-48 flex"
           />
 
           <div className="flex flex-col items-end justify-center px-5 py-2 bg-panel rounded-lg border-2 border-[#1a2d37] shadow-inner">
