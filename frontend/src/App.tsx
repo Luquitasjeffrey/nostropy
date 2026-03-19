@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import MinesPage from './components/MinesPage';
 import DicePage from './components/DicePage';
 import BlackjackPage from './components/BlackjackPage';
-import { KeyRound, Pickaxe, Dices, Spade } from 'lucide-react';
+import ForkPage from './components/ForkPage';
+import { KeyRound, Pickaxe, Dices, Spade, GitFork } from 'lucide-react';
 import { Input } from './components/ui/Input';
 import logoImg from './assets/logo.png';
 
@@ -12,7 +13,7 @@ function App() {
   const [playerPubkey, setPlayerPubkey] = useState('');
   const [allBalances, setAllBalances] = useState<any[]>([]);
   const [prices, setPrices] = useState<Record<string, number>>({ BTC: 60000, USDT: 1 }); // Reasonable defaults
-  const [currentGame, setCurrentGame] = useState<'MINES' | 'DICE' | 'BLACKJACK'>('BLACKJACK');
+  const [currentGame, setCurrentGame] = useState<'MINES' | 'DICE' | 'BLACKJACK' | 'FORK'>('FORK');
 
   useEffect(() => {
     const storedPub = localStorage.getItem('playerPubkey');
@@ -139,6 +140,16 @@ function App() {
           <Spade size={20} />
           <span>Blackjack</span>
         </button>
+        <button
+          onClick={() => setCurrentGame('FORK')}
+          className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'FORK'
+            ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
+            : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
+            }`}
+        >
+          <GitFork size={20} />
+          <span>Fork</span>
+        </button>
       </div>
 
       <main className="w-full flex-1 py-12">
@@ -160,6 +171,14 @@ function App() {
         )}
         {currentGame === 'BLACKJACK' && (
           <BlackjackPage
+            playerPubkey={playerPubkey}
+            allBalances={allBalances}
+            prices={prices}
+            onGameEnd={() => fetchBalance(playerPubkey)}
+          />
+        )}
+        {currentGame === 'FORK' && (
+          <ForkPage
             playerPubkey={playerPubkey}
             allBalances={allBalances}
             prices={prices}
