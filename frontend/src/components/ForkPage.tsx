@@ -116,6 +116,8 @@ export default function ForkPage({
     };
 
     const isPlaying = status === 'mining';
+    const blockSizeClass = targetBlocks > 10 ? 'w-10 h-10' : targetBlocks > 8 ? 'w-12 h-12' : 'w-14 h-14';
+    const iconSize = targetBlocks > 10 ? 18 : targetBlocks > 8 ? 20 : 24;
 
     return (
         <div className="w-full max-w-6xl mx-auto px-4 flex flex-col md:flex-row gap-6">
@@ -158,7 +160,7 @@ export default function ForkPage({
                             <input
                                 type="range"
                                 min="2"
-                                max="50"
+                                max="12"
                                 step="1"
                                 value={targetBlocks}
                                 onChange={(e) => setTargetBlocks(parseInt(e.target.value))}
@@ -285,9 +287,9 @@ export default function ForkPage({
                                                 damping: winner === 'house' ? 10 : 20,
                                                 delay: winner === 'house' ? i * 0.05 : 0
                                             }}
-                                            className="w-14 h-14 bg-[#ed4141] rounded-lg flex items-center justify-center shadow-[0_4px_15px_rgba(237,65,101,0.4)] border-2 border-[#ff5f5f] relative overflow-hidden group"
+                                            className={`${blockSizeClass} bg-[#ed4141] rounded-lg flex items-center justify-center shadow-[0_4px_15px_rgba(237,65,101,0.4)] border-2 border-[#ff5f5f] relative overflow-hidden group`}
                                         >
-                                            <Cpu size={24} className="text-white relative z-10" />
+                                            <Cpu size={iconSize} className="text-white relative z-10" />
                                             {/* Cracked effect on loss */}
                                             {winner === 'house' && (
                                                 <div className="absolute inset-0 bg-black/20 z-20 flex items-center justify-center">
@@ -302,9 +304,9 @@ export default function ForkPage({
                                     <motion.div
                                         animate={{ opacity: [0.3, 0.7, 0.3], scale: [0.95, 1.05, 0.95] }}
                                         transition={{ repeat: Infinity, duration: 1.5 }}
-                                        className="w-14 h-14 border-2 border-dashed border-[#ed4141]/50 rounded-lg flex items-center justify-center"
+                                        className={`${blockSizeClass} border-2 border-dashed border-[#ed4141]/50 rounded-lg flex items-center justify-center`}
                                     >
-                                        <div className="w-6 h-6 border-2 border-t-transparent border-[#ed4141] rounded-full animate-spin"></div>
+                                        <div className={`${targetBlocks > 10 ? 'w-4 h-4' : 'w-6 h-6'} border-2 border-t-transparent border-[#ed4141] rounded-full animate-spin`}></div>
                                     </motion.div>
                                 )}
                             </div>
@@ -337,7 +339,7 @@ export default function ForkPage({
                                                 delay: winner === 'player' ? i * 0.08 : 0,
                                                 ease: winner === 'player' ? "easeIn" : "easeOut"
                                             }}
-                                            className="w-14 h-14 bg-[#7c3aed] border-2 border-[#9b66ff] rounded-lg flex items-center justify-center shadow-[0_4px_15px_rgba(124,58,237,0.3)] relative overflow-hidden"
+                                            className={`${blockSizeClass} bg-[#7c3aed] border-2 border-[#9b66ff] rounded-lg flex items-center justify-center shadow-[0_4px_15px_rgba(124,58,237,0.3)] relative overflow-hidden`}
                                         >
                                             <div className="w-8 h-1.5 bg-white/40 rounded-full relative z-10" />
                                             {/* Cracked effect on loss */}
@@ -354,7 +356,7 @@ export default function ForkPage({
                                     <motion.div
                                         animate={{ opacity: [0.2, 0.5, 0.2] }}
                                         transition={{ repeat: Infinity, duration: 2 }}
-                                        className="w-14 h-14 border-2 border-dashed border-[#7c3aed]/40 rounded-lg"
+                                        className={`${blockSizeClass} border-2 border-dashed border-[#7c3aed]/40 rounded-lg`}
                                     />
                                 )}
                             </div>
