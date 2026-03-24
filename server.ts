@@ -7,6 +7,7 @@ import diceRoutes from './routes/dice';
 import blackjackRoutes from './routes/blackjack';
 import forkRoutes from './routes/fork';
 import userRoutes from './routes/user';
+import authRoutes from './routes/auth';
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use('/api/games/dice', diceRoutes);
 app.use('/api/games/blackjack', blackjackRoutes);
 app.use('/api/games/fork', forkRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/auth', authRoutes);
 
 // Database connection
 connectDB()
