@@ -11,6 +11,7 @@ interface DicePageProps {
 }
 
 import { API_URL } from '../config';
+import { authRequest } from '../utils/api';
 
 export default function DicePage({
   playerPubkey,
@@ -82,7 +83,7 @@ export default function DicePage({
       const wagerInt = Math.floor(cryptoAmount * Math.pow(10, decimals));
 
       // 1. POST /api/games/dice/new
-      const newResponse = await fetch(`${API_URL}/api/games/dice/new`, {
+      const newResponse = await authRequest(`${API_URL}/api/games/dice/new`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -111,7 +112,7 @@ export default function DicePage({
       // 2. POST /api/games/dice/set_client_seed
       const newClientSeed = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
       setClientSeed(newClientSeed);
-      const revealResponse = await fetch(`${API_URL}/api/games/dice/set_client_seed`, {
+      const revealResponse = await authRequest(`${API_URL}/api/games/dice/set_client_seed`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

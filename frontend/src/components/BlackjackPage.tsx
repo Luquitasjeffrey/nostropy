@@ -5,6 +5,7 @@ import { WagerInput } from './ui/WagerInput';
 import { ProvablyFair } from './ui/ProvablyFair';
 
 import { API_URL } from '../config';
+import { authRequest } from '../utils/api';
 
 interface BlackjackPageProps {
     playerPubkey: string;
@@ -108,7 +109,7 @@ export default function BlackjackPage({
             const wagerInt = Math.floor(cryptoAmount * Math.pow(10, decimals));
 
             // 1. POST /newgame
-            const resNew = await fetch(`${API_URL}/api/games/blackjack/newgame`, {
+            const resNew = await authRequest(`${API_URL}/api/games/blackjack/newgame`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -131,7 +132,7 @@ export default function BlackjackPage({
             const newClientSeed = Math.random().toString(36).substring(2, 15);
             setClientSeed(newClientSeed);
 
-            const resSeed = await fetch(`${API_URL}/api/games/blackjack/set_client_seed`, {
+            const resSeed = await authRequest(`${API_URL}/api/games/blackjack/set_client_seed`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

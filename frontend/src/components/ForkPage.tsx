@@ -5,6 +5,7 @@ import { ProvablyFair } from './ui/ProvablyFair';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GitFork, Shield, User, Cpu } from 'lucide-react';
 import { API_URL } from '../config';
+import { authRequest } from '../utils/api';
 
 interface ForkPageProps {
     playerPubkey: string;
@@ -90,7 +91,7 @@ export default function ForkPage({
             console.log('Starting Fork game:', { targetBlocks, hashratePercent, wagerInt });
 
             // 1. New Game
-            const newResponse = await fetch(`${API_URL}/api/games/fork/new_game`, {
+            const newResponse = await authRequest(`${API_URL}/api/games/fork/new_game`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -115,7 +116,7 @@ export default function ForkPage({
             const newClientSeed = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
             setClientSeed(newClientSeed);
 
-            const revealResponse = await fetch(`${API_URL}/api/games/fork/set_client_seed`, {
+            const revealResponse = await authRequest(`${API_URL}/api/games/fork/set_client_seed`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

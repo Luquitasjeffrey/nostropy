@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { ProvablyFair } from './ui/ProvablyFair';
 
 import { API_URL as BASE_API_URL } from '../config';
+import { authRequest } from '../utils/api';
 
 interface MinesPageProps {
   playerPubkey: string;
@@ -65,7 +66,7 @@ export default function MinesPage({
       `Starting game with USD: $${wager}, Crypto Symbol: ${currencySymbol}, Price: ${price}, Crypto Amount: ${cryptoAmount}, Wager Int (smallest units): ${wagerInt}`
     );
 
-    const res = await fetch(`${API_URL}/games/mines/new`, {
+    const res = await authRequest(`${API_URL}/games/mines/new`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -98,7 +99,7 @@ export default function MinesPage({
   async function submitClientSeed() {
     if (!gameId || !clientSeed) return;
     localStorage.setItem('clientSeed', clientSeed);
-    const res = await fetch(`${API_URL}/games/mines/set_client_seed`, {
+    const res = await authRequest(`${API_URL}/games/mines/set_client_seed`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ playerPubkey, gameId, clientSeed }),
@@ -120,7 +121,7 @@ export default function MinesPage({
 
   async function revealCell(index: number) {
     if (!gameId || status !== 'active') return;
-    const res = await fetch(`${API_URL}/games/mines/reveal_one`, {
+    const res = await authRequest(`${API_URL}/games/mines/reveal_one`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ playerPubkey, gameId, index }),
@@ -140,7 +141,7 @@ export default function MinesPage({
 
   async function cashOut() {
     if (!gameId || status !== 'active') return;
-    const res = await fetch(`${API_URL}/games/mines/cash_out`, {
+    const res = await authRequest(`${API_URL}/games/mines/cash_out`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ playerPubkey, gameId }),

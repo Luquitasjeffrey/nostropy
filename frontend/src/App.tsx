@@ -7,6 +7,7 @@ import BaccaratPage from './components/BaccaratPage';
 import { KeyRound, Pickaxe, Dices, Spade, GitFork, Layers } from 'lucide-react';
 import { Input } from './components/ui/Input';
 import logoImg from './assets/logo.png';
+import { authRequest } from './utils/api';
 
 import { API_URL } from './config';
 
@@ -47,7 +48,7 @@ function App() {
   const fetchBalance = async (pubkey: string) => {
     if (!pubkey) return;
     try {
-      const response = await fetch(`${API_URL}/api/user/balance?pubkey=${pubkey}`);
+      const response = await authRequest(`${API_URL}/api/user/balance?pubkey=${pubkey}`);
       const data = await response.json();
       if (data.balances) {
         setAllBalances(data.balances);
