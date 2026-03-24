@@ -5,6 +5,7 @@ import { connectDB } from './utils/db';
 import minesRoutes from './routes/mines';
 import diceRoutes from './routes/dice';
 import blackjackRoutes from './routes/blackjack';
+import forkRoutes from './routes/fork';
 import userRoutes from './routes/user';
 
 dotenv.config();
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use('/api/games/mines', minesRoutes);
 app.use('/api/games/dice', diceRoutes);
 app.use('/api/games/blackjack', blackjackRoutes);
+app.use('/api/games/fork', forkRoutes);
 app.use('/api/user', userRoutes);
 
 // Database connection

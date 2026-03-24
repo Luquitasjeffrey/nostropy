@@ -4,6 +4,7 @@ import { WagerInput } from './ui/WagerInput';
 import { ProvablyFair } from './ui/ProvablyFair';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GitFork, Shield, User, Cpu } from 'lucide-react';
+import { API_URL } from '../config';
 
 interface ForkPageProps {
     playerPubkey: string;
@@ -77,42 +78,90 @@ export default function ForkPage({
         setHouseBlocks(0);
         setWinner(null);
         setPayout(null);
+        setServerSeedShown(null);
 
-        // Mock backend delay and ID generation
-        setGameId('fork_' + Math.random().toString(36).substr(2, 9));
-        setServerSeedHash('hash_' + Math.random().toString(36).substr(2, 9));
-        setClientSeed(Math.random().toString(36).substr(2, 15));
+        try {
+            const price = prices[currencySymbol] || 1;
+            const cryptoAmount = wager / price;
+            const decimals = currencySymbol === 'BTC' ? 8 : 6;
+            const wagerInt = Math.floor(cryptoAmount * Math.pow(10, decimals));
+            const hashratePercent = Math.round(hashrate * 100);
 
-        // Simulation loop
-        let p = 0;
-        let h = 0;
-        const z = targetBlocks;
-        const q = hashrate;
+            console.log('Starting Fork game:', { targetBlocks, hashratePercent, wagerInt });
 
-        const interval = setInterval(() => {
-            if (Math.random() < q) {
-                p++;
-                setPlayerBlocks(p);
-            } else {
-                h++;
-                setHouseBlocks(h);
-            }
+            // 1. New Game
+            const newResponse = await fetch(`${API_URL}/api/games/fork/new_game`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    playerPubkey,
+                    wagerAmount: wagerInt,
+                    currencySymbol,
+                    targetBlocks,
+                    hashrate: hashratePercent,
+                }),
+            });
 
-            if (p >= z || h >= z) {
-                clearInterval(interval);
-                const isWin = p >= z;
-                setWinner(isWin ? 'player' : 'house');
-                setStatus('finished');
+            const newData = await newResponse.json();
+            if (!newResponse.ok) throw new Error(newData.error || 'Failed to start game');
 
-                if (isWin) {
-                    const usdPayout = wager * multiplier;
-                    setPayout(usdPayout);
+            setGameId(newData.gameId);
+            setServerSeedHash(newData.serverSeedHash);
+
+            // Deduct wager visually
+            onGameEnd();
+
+            // 2. Set Client Seed & Reveal
+            const newClientSeed = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+            setClientSeed(newClientSeed);
+
+            const revealResponse = await fetch(`${API_URL}/api/games/fork/set_client_seed`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    playerPubkey,
+                    gameId: newData.gameId,
+                    clientSeed: newClientSeed,
+                }),
+            });
+
+            const revealData = await revealResponse.json();
+            if (!revealResponse.ok) throw new Error(revealData.error || 'Failed to reveal game');
+
+            console.log('Game result received:', revealData);
+
+            // Animation Loop
+            const orders = revealData.blockOrders;
+            for (let i = 0; i < orders.length; i++) {
+                // Wait for the next block to "mine"
+                await new Promise(resolve => setTimeout(resolve, 600));
+                if (orders[i] === 'player') {
+                    setPlayerBlocks(p => p + 1);
+                } else {
+                    setHouseBlocks(h => h + 1);
                 }
-
-                setServerSeedShown('seed_' + Math.random().toString(36).substr(2, 15));
-                onGameEnd();
             }
-        }, 400); // 400ms per block generation for dramatic effect
+
+            // Small delay to let the last block settle
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // End game state updates
+            setWinner(revealData.status === 'WIN' ? 'player' : 'house');
+            setStatus('finished');
+            setServerSeedShown(revealData.serverSeed);
+
+            if (revealData.status === 'WIN') {
+                const cryptoPayout = revealData.payout / Math.pow(10, decimals);
+                const usdPayout = cryptoPayout * price;
+                setPayout(usdPayout);
+            }
+
+            onGameEnd();
+        } catch (error) {
+            console.error('Fork game error:', error);
+            alert(error instanceof Error ? error.message : 'An error occurred during the game');
+            setStatus('initial');
+        }
     };
 
     const isPlaying = status === 'mining';
