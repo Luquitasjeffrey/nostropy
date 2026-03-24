@@ -195,7 +195,7 @@ export default function BlackjackPage({
         setIsActionDisabled(true);
 
         try {
-            const res = await fetch(`${API_URL}/api/games/blackjack/${endpoint}`, {
+            const res = await authRequest(`${API_URL}/api/games/blackjack/${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
