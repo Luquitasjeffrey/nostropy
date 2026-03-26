@@ -89,6 +89,7 @@ function App() {
             onChange={(e) => {
               setPlayerPubkey(e.target.value);
               localStorage.setItem('playerPubkey', e.target.value);
+              localStorage.removeItem('jwt_token');
             }}
             placeholder="Pubkey ID"
             icon={<KeyRound size={16} />}
