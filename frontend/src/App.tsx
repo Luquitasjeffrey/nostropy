@@ -4,8 +4,8 @@ import DicePage from './components/DicePage';
 import BlackjackPage from './components/BlackjackPage';
 import ForkPage from './components/ForkPage';
 import BaccaratPage from './components/BaccaratPage';
-import { KeyRound, Pickaxe, Dices, Spade, GitFork, Layers } from 'lucide-react';
-import { Input } from './components/ui/Input';
+import { Pickaxe, Dices, Spade, GitFork, Layers } from 'lucide-react';
+import { NostrIdentityManager } from './components/NostrIdentityManager';
 import logoImg from './assets/logo.png';
 import { authRequest } from './utils/api';
 
@@ -18,8 +18,17 @@ function App() {
   const [currentGame, setCurrentGame] = useState<'MINES' | 'DICE' | 'BLACKJACK' | 'BACCARAT' | 'FORK'>('FORK');
 
   useEffect(() => {
-    const storedPub = localStorage.getItem('playerPubkey');
-    if (storedPub) setPlayerPubkey(storedPub);
+    // Check if nostr identity is persisted
+    const storedNpub = localStorage.getItem('nostr_npub');
+    if (storedNpub) {
+      setPlayerPubkey(storedNpub);
+      // Ensure we clear legacy basic storedPub if present
+      localStorage.removeItem('playerPubkey');
+    } else {
+      // Legacy fallback
+      const storedPub = localStorage.getItem('playerPubkey');
+      if (storedPub) setPlayerPubkey(storedPub);
+    }
 
     // Initial price fetch
     fetchPrices();
@@ -84,16 +93,12 @@ function App() {
         </div>
 
         <div className="flex items-center space-x-6">
-          <Input
-            value={playerPubkey}
-            onChange={(e) => {
-              setPlayerPubkey(e.target.value);
-              localStorage.setItem('playerPubkey', e.target.value);
+          <NostrIdentityManager
+            playerPubkey={playerPubkey}
+            setPlayerPubkey={(pk) => {
+              setPlayerPubkey(pk);
               localStorage.removeItem('jwt_token');
             }}
-            placeholder="Pubkey ID"
-            icon={<KeyRound size={16} />}
-            className="w-32 md:w-48 flex"
           />
 
           <div className="flex flex-col items-end justify-center px-5 py-2 bg-panel rounded-lg border-2 border-[#1a2d37] shadow-inner">

@@ -1,7 +1,7 @@
 import { API_URL } from '../config';
 
 export const refreshToken = async (): Promise<string | null> => {
-    const pubkey = localStorage.getItem('playerPubkey');
+    const pubkey = localStorage.getItem('nostr_npub') || localStorage.getItem('playerPubkey');
     if (!pubkey) {
         console.error('No player pubkey found in localStorage, cannot fetch JWT');
         return null;
