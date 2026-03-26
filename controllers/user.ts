@@ -47,3 +47,44 @@ export const getCurrencies = async (req: Request, res: Response): Promise<void> 
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const faucet = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const pubkey = req.user?.pubkey;
+    if (!pubkey) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    await connectDB();
+    const user = await getOrCreateUser(pubkey);
+
+    const btcCurrency = await Cryptocurrency.findOne({ symbol: 'BTC' });
+    if (!btcCurrency) {
+      res.status(500).json({ error: 'BTC currency not found' });
+      return;
+    }
+
+    const amountToAdd = 0.1 * Math.pow(10, btcCurrency.decimal_places);
+    const balanceIndex = user.balances.findIndex(
+      (b) => b.currency.toString() === btcCurrency._id.toString()
+    );
+
+    if (balanceIndex === -1) {
+      user.balances.push({
+        currency: btcCurrency._id,
+        amount: amountToAdd,
+      });
+    } else {
+      user.balances[balanceIndex].amount += amountToAdd;
+    }
+
+    user.test = true;
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Balance reloaded' });
+  } catch (error) {
+    console.error('Error reloading balance:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};

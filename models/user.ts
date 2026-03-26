@@ -8,6 +8,7 @@ export interface IUserBalance {
 export interface IUser extends Document {
   pubkey: string;
   balances: IUserBalance[];
+  test: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,6 +25,7 @@ const UserSchema: Schema = new Schema(
   {
     pubkey: { type: String, required: true, unique: true, index: true },
     balances: [UserBalanceSchema],
+    test: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

@@ -4,7 +4,7 @@ import DicePage from './components/DicePage';
 import BlackjackPage from './components/BlackjackPage';
 import ForkPage from './components/ForkPage';
 import BaccaratPage from './components/BaccaratPage';
-import { Pickaxe, Dices, Spade, GitFork, Layers } from 'lucide-react';
+import { Pickaxe, Dices, Spade, GitFork, Layers, Droplets } from 'lucide-react';
 import { NostrIdentityManager } from './components/NostrIdentityManager';
 import logoImg from './assets/logo.png';
 import { authRequest } from './utils/api';
@@ -100,6 +100,27 @@ function App() {
               localStorage.removeItem('jwt_token');
             }}
           />
+
+          <button
+            onClick={async () => {
+              if (!playerPubkey) return;
+              try {
+                const res = await authRequest(`${API_URL}/api/user/faucet`, { method: 'POST' });
+                if (res.ok) {
+                  fetchBalance(playerPubkey);
+                } else {
+                  console.error('Failed to request faucet, status:', res.status);
+                }
+              } catch (err) {
+                console.error('Error hitting faucet endpoint:', err);
+              }
+            }}
+            className="flex items-center space-x-2 px-3 py-2 bg-[#0f212e] border-2 border-[#1a2d37] hover:border-primary hover:text-white rounded-lg text-primary font-black transition-colors shadow-inner"
+            title="Reload Test Balance"
+          >
+            <Droplets size={16} />
+            <span className="hidden sm:inline text-xs uppercase tracking-wider">Faucet</span>
+          </button>
 
           <div className="flex flex-col items-end justify-center px-5 py-2 bg-panel rounded-lg border-2 border-[#1a2d37] shadow-inner">
             <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">
