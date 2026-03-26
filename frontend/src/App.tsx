@@ -15,7 +15,7 @@ function App() {
   const [playerPubkey, setPlayerPubkey] = useState('');
   const [allBalances, setAllBalances] = useState<any[]>([]);
   const [prices, setPrices] = useState<Record<string, number>>({ BTC: 60000, USDT: 1 }); // Reasonable defaults
-  const [currentGame, setCurrentGame] = useState<'MINES' | 'DICE' | 'BLACKJACK' | 'BACCARAT' | 'FORK'>('FORK');
+  const [currentGame, setCurrentGame] = useState<'MINES' | 'DICE' | 'BLACKJACK' | 'BACCARAT' | 'FORK'>('BLACKJACK');
 
   useEffect(() => {
     // Check if nostr identity is persisted
