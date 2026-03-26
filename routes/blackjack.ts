@@ -1,10 +1,10 @@
 import express from 'express';
 import { newGame, setClientSeed, hit, stand, doubledown, split } from '../controllers/blackjack';
-import { injectUser } from '../middleware/auth';
+import { authenticatedUser } from '../middleware/auth';
 
 const router = express.Router();
 
-router.use(injectUser);
+router.use(authenticatedUser);
 
 // Same pattern as dice/mines
 router.post('/newgame', newGame);

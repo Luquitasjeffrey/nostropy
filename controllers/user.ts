@@ -2,13 +2,14 @@ import { Request, Response } from 'express';
 import { connectDB } from '../utils/db';
 import { getOrCreateUser } from '../utils/user_balance';
 import Cryptocurrency from '../models/cryptocurrency';
+import { AuthenticatedRequest } from '../types/express';
 
-export const getBalance = async (req: Request, res: Response): Promise<void> => {
+export const getBalance = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    const { pubkey } = req.query;
+    const pubkey = req.user?.pubkey;
 
-    if (!pubkey || typeof pubkey !== 'string') {
-      res.status(400).json({ error: 'Missing pubkey query parameter' });
+    if (!pubkey) {
+      res.status(400).json({ error: 'Missing pubkey' });
       return;
     }
 
