@@ -124,13 +124,13 @@ export class GameSeed {
    * Used specifically for Satoshi Dice style games.
    */
   nextFloat(): number {
-    // We take the next 32 bytes and use it to get a uniformly distributed 
+    // We take the next 32 bytes and use it to get a uniformly distributed
     // float in [0.0, 1.0) by dividing the big int by the max possible value (2^256)
     // Then multiply by 100 to get [0.0, 100.0)
     const maxBigInt = 2n ** 256n;
     const randomBigInt = this.nextBigInt();
 
-    // Convert to Number for float precision math. 
+    // Convert to Number for float precision math.
     // Number() can lose precision for very large ints, but for ratios it works perfectly.
     const ratio = Number(randomBigInt) / Number(maxBigInt);
 

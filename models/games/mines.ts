@@ -36,45 +36,42 @@ export interface IMinesGame extends IGame {
   nostr_event_id?: string;
 }
 
-const MinesGameSchema = new Schema<IMinesGame>(
-  {
-    mines_count: {
-      type: Number,
-      default: 5,
-      min: 1,
-      max: 24,
-    },
-    board_state: {
-      cell_types: {
-        type: [String],
-        required: true,
-        validate: {
-          validator: (arr: string[]) => arr.length === 25,
-          message: '5x5 grid must have exactly 25 cells',
-        },
-      },
-      revealed_indices: {
-        type: [Number],
-        default: [],
+const MinesGameSchema = new Schema<IMinesGame>({
+  mines_count: {
+    type: Number,
+    default: 5,
+    min: 1,
+    max: 24,
+  },
+  board_state: {
+    cell_types: {
+      type: [String],
+      required: true,
+      validate: {
+        validator: (arr: string[]) => arr.length === 25,
+        message: '5x5 grid must have exactly 25 cells',
       },
     },
-    current_multiplier: {
-      type: Number,
-      default: 1.0,
-      min: 1.0,
+    revealed_indices: {
+      type: [Number],
+      default: [],
     },
-    status: {
-      type: String,
-      enum: ['WAITING_CLIENT_SEED', 'CANCELED', 'ACTIVE', 'LOST', 'CASHED_OUT'],
-      default: 'WAITING_CLIENT_SEED',
-    },
-    nostr_event_id: String,
-  }
-);
+  },
+  current_multiplier: {
+    type: Number,
+    default: 1.0,
+    min: 1.0,
+  },
+  status: {
+    type: String,
+    enum: ['WAITING_CLIENT_SEED', 'CANCELED', 'ACTIVE', 'LOST', 'CASHED_OUT'],
+    default: 'WAITING_CLIENT_SEED',
+  },
+  nostr_event_id: String,
+});
 
 // Prevent overwriting the model if it already exists
 const MinesGame =
-  Game.discriminators?.Mines ||
-  Game.discriminator<IMinesGame>('Mines', MinesGameSchema);
+  Game.discriminators?.Mines || Game.discriminator<IMinesGame>('Mines', MinesGameSchema);
 
 export default MinesGame;

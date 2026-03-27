@@ -42,7 +42,7 @@ export const newGame = async (req: AuthenticatedRequest, res: Response): Promise
 
     // Calculate Multiplier
     const winChance = 100 - userNumber;
-    const multiplier = (100 / (winChance)) * (1 - DICE_HOUSE_EDGE);
+    const multiplier = (100 / winChance) * (1 - DICE_HOUSE_EDGE);
 
     const serverSeed = generateServerSeed();
 
@@ -102,7 +102,7 @@ export const setClientSeed = async (req: AuthenticatedRequest, res: Response): P
     let status: 'WIN' | 'LOST' = 'LOST';
     let payout = 0;
 
-    // Win condition: Roll >= User Target Number 
+    // Win condition: Roll >= User Target Number
     // (Based on the implementation plan, user wins if roll >= target)
     if (rollNumber >= game.user_number) {
       status = 'WIN';
@@ -130,7 +130,7 @@ export const setClientSeed = async (req: AuthenticatedRequest, res: Response): P
       status,
       roll_number: rollNumber,
       payout,
-      serverSeed: game.server_seed
+      serverSeed: game.server_seed,
     });
   } catch (error) {
     console.error('Error revealing dice game:', error);

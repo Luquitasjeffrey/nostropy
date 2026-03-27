@@ -13,12 +13,7 @@ interface DicePageProps {
 import { API_URL } from '../config';
 import { authRequest } from '../utils/api';
 
-export default function DicePage({
-  playerPubkey,
-  allBalances,
-  prices,
-  onGameEnd,
-}: DicePageProps) {
+export default function DicePage({ playerPubkey, allBalances, prices, onGameEnd }: DicePageProps) {
   const [currencySymbol, setCurrencySymbol] = useState('BTC');
   const [wager, setWager] = useState(10);
 
@@ -59,7 +54,7 @@ export default function DicePage({
   };
 
   const handleMultiplierChange = (val: number) => {
-    // Math: mult = (1 / chance) * 0.99 
+    // Math: mult = (1 / chance) * 0.99
     // => chance = 0.99 / mult
     if (val < 1.0102) return; // Cap multiplier based on 98 max target
     const chance = (0.99 / val) * 100;
@@ -110,7 +105,8 @@ export default function DicePage({
       await new Promise((res) => setTimeout(res, 600));
 
       // 2. POST /api/games/dice/set_client_seed
-      const newClientSeed = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const newClientSeed =
+        Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
       setClientSeed(newClientSeed);
       const revealResponse = await authRequest(`${API_URL}/api/games/dice/set_client_seed`, {
         method: 'POST',
@@ -141,7 +137,6 @@ export default function DicePage({
 
       // Update balance globally (payout credited if won)
       onGameEnd();
-
     } catch (err) {
       console.error(err);
       setStatus('initial');
@@ -185,12 +180,11 @@ export default function DicePage({
       <div className="flex-1 flex flex-col items-center justify-center bg-panel border-2 border-[#1a2d37] rounded-lg p-8 min-h-[500px] gap-12">
         {/* The Dice Value Display */}
         <div className="relative w-full max-w-3xl flex flex-col items-center gap-12">
-
           <div className="text-center h-20 flex items-center justify-center">
             {rollResult !== null && status === 'finished' ? (
               hasWon ? (
                 <span className="text-5xl font-black text-[#00e701] drop-shadow-[0_0_15px_rgba(0,231,1,0.5)]">
-                  ${payout !== null ? payout.toFixed(2) : "0.00"}
+                  ${payout !== null ? payout.toFixed(2) : '0.00'}
                 </span>
               ) : (
                 <span className="text-5xl font-black text-[#ed4141] drop-shadow-[0_0_15px_rgba(237,65,65,0.5)]">
@@ -198,9 +192,7 @@ export default function DicePage({
                 </span>
               )
             ) : (
-              <span className="text-6xl font-black text-white opacity-80">
-                0.00
-              </span>
+              <span className="text-6xl font-black text-white opacity-80">0.00</span>
             )}
           </div>
 
@@ -211,7 +203,7 @@ export default function DicePage({
               <div
                 className="absolute left-0 right-0 h-4 rounded-full overflow-hidden"
                 style={{
-                  background: `linear-gradient(to right, #ed4141 ${target}%, #00e701 ${target}%)`
+                  background: `linear-gradient(to right, #ed4141 ${target}%, #00e701 ${target}%)`,
                 }}
               />
 
@@ -222,13 +214,17 @@ export default function DicePage({
                   style={{
                     left: `calc(${rollResult}%)`,
                     transform: 'translateX(-50%)',
-                    top: 'calc(50% + 4px)'
+                    top: 'calc(50% + 4px)',
                   }}
                 >
                   <div className="w-[3px] h-4 bg-white mb-1 rounded-full shadow-md"></div>
-                  <div className={`text-white text-xs font-black px-2 py-1 rounded shadow-xl whitespace-nowrap relative ${hasWon ? 'bg-[#00e701]' : 'bg-[#ed4141]'}`}>
+                  <div
+                    className={`text-white text-xs font-black px-2 py-1 rounded shadow-xl whitespace-nowrap relative ${hasWon ? 'bg-[#00e701]' : 'bg-[#ed4141]'}`}
+                  >
                     {/* little triangle pointing up */}
-                    <div className={`absolute -top-1 left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent ${hasWon ? 'border-b-[#00e701]' : 'border-b-[#ed4141]'}`}></div>
+                    <div
+                      className={`absolute -top-1 left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent ${hasWon ? 'border-b-[#00e701]' : 'border-b-[#ed4141]'}`}
+                    ></div>
                     {rollResult.toFixed(2)}
                   </div>
                 </div>
@@ -274,7 +270,9 @@ export default function DicePage({
                 />
                 <span className="text-sm font-bold text-white">×</span>
               </div>
-              <label className="text-xs font-bold text-gray-500 pointer-events-none select-none hidden md:block">Multiplier</label>
+              <label className="text-xs font-bold text-gray-500 pointer-events-none select-none hidden md:block">
+                Multiplier
+              </label>
             </div>
 
             <div className="flex-1 bg-[#0f212e] rounded-md border-2 border-[#1a2d37] focus-within:border-gray-500 overflow-hidden flex items-center justify-between px-3 h-11">
@@ -288,7 +286,9 @@ export default function DicePage({
                   step="0.01"
                 />
               </div>
-              <label className="text-xs font-bold text-gray-500 pointer-events-none select-none hidden md:block">Roll Over</label>
+              <label className="text-xs font-bold text-gray-500 pointer-events-none select-none hidden md:block">
+                Roll Over
+              </label>
             </div>
 
             <div className="flex-1 bg-[#0f212e] rounded-md border-2 border-[#1a2d37] focus-within:border-gray-500 overflow-hidden flex items-center justify-between px-3 h-11">
@@ -303,10 +303,11 @@ export default function DicePage({
                 />
                 <span className="text-sm font-bold text-white">%</span>
               </div>
-              <label className="text-xs font-bold text-gray-500 pointer-events-none select-none hidden md:block">Win Chance</label>
+              <label className="text-xs font-bold text-gray-500 pointer-events-none select-none hidden md:block">
+                Win Chance
+              </label>
             </div>
           </div>
-
         </div>
         <ProvablyFair
           gameId={gameId}
