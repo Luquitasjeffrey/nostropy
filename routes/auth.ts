@@ -1,8 +1,9 @@
 import express from 'express';
-import { createSession } from '../controllers/auth';
+import { challenge, verify } from '../controllers/auth';
 
 const router = express.Router();
 
-router.post('/', createSession);
+router.get('/challenge', challenge);
+router.post('/verify', verify);
 
 export default router;
