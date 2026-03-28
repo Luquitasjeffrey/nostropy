@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { KeyRound, Dices, Copy, LogOut, Check } from 'lucide-react';
 import { generateSecretKey, getPublicKey, nip19 } from 'nostr-tools';
-
+import { API_URL } from '../config';
+import { authRequest } from '../utils/api';
 interface NostrIdentityManagerProps {
   playerPubkey: string;
   setPlayerPubkey: (pubkey: string) => void;
@@ -12,7 +13,31 @@ export function NostrIdentityManager({ playerPubkey, setPlayerPubkey }: NostrIde
   const [recoveryNsec, setRecoveryNsec] = useState('');
   const [showNsec, setShowNsec] = useState(false);
   const [copied, setCopied] = useState<'npub' | 'nsec' | null>(null);
+  const [userAlias, setUserAlias] = useState<string | null>(null);
+  const [inputAlias, setInputAlias] = useState('');
+  const [isSavingAlias, setIsSavingAlias] = useState(false);
+  const [aliasMessage, setAliasMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (playerPubkey) {
+      fetch(`${API_URL}/api/user/getalias/${playerPubkey}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.alias) {
+            setUserAlias(data.alias);
+            setInputAlias(data.alias);
+          } else {
+            setUserAlias(null);
+            setInputAlias('');
+          }
+        })
+        .catch((err) => console.error('Error fetching alias', err));
+    } else {
+      setUserAlias(null);
+      setInputAlias('');
+    }
+  }, [playerPubkey]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -73,7 +98,37 @@ export function NostrIdentityManager({ playerPubkey, setPlayerPubkey }: NostrIde
     localStorage.removeItem('nostr_nsec');
     localStorage.removeItem('nostr_npub');
     setPlayerPubkey('');
+    setUserAlias(null);
+    setInputAlias('');
     setIsOpen(false);
+  };
+
+  const handleSaveAlias = async () => {
+    setIsSavingAlias(true);
+    try {
+      const aliasPayload = inputAlias.trim() || null;
+      const res = await authRequest(`${API_URL}/api/user/setalias`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ alias: aliasPayload }),
+      });
+      if (res.ok) {
+        setUserAlias(aliasPayload);
+        setAliasMessage({ text: 'Alias saved successfully', type: 'success' });
+        setTimeout(() => setAliasMessage(null), 3000);
+      } else {
+        const data = await res.json();
+        setAliasMessage({ text: data.error || 'Failed to save alias', type: 'error' });
+        setTimeout(() => setAliasMessage(null), 3000);
+      }
+    } catch (err) {
+      console.error(err);
+      setAliasMessage({ text: 'Error saving alias', type: 'error' });
+      setTimeout(() => setAliasMessage(null), 3000);
+    }
+    setIsSavingAlias(false);
   };
 
   const handleCopy = async (text: string, type: 'npub' | 'nsec') => {
@@ -96,8 +151,8 @@ export function NostrIdentityManager({ playerPubkey, setPlayerPubkey }: NostrIde
         className="flex items-center space-x-2 px-4 py-2.5 bg-panel border-2 border-[#1a2d37] hover:border-primary hover:text-primary rounded-lg text-gray-400 font-bold transition-colors shadow-inner"
       >
         <KeyRound size={16} />
-        <span className="truncate max-w-[120px]">
-          {playerPubkey && npub ? npub.slice(0, 10) + '...' : 'Login'}
+        <span className="truncate max-w-[200px]">
+          {playerPubkey && npub ? (userAlias ? `@${userAlias}` : npub.slice(0, 10) + '...') : 'Login'}
         </span>
       </button>
 
@@ -154,6 +209,36 @@ export function NostrIdentityManager({ playerPubkey, setPlayerPubkey }: NostrIde
                     )}
                   </button>
                 </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs uppercase font-bold text-gray-500 tracking-wider">
+                  Alias (Optional)
+                </label>
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    placeholder="Set an alias..."
+                    value={inputAlias}
+                    onChange={(e) => setInputAlias(e.target.value)}
+                    className="flex-1 min-w-0 bg-[#0f212e] border-2 border-[#1a2d37] rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-primary transition-colors"
+                  />
+                  <button
+                    onClick={handleSaveAlias}
+                    disabled={isSavingAlias}
+                    className="px-4 bg-primary text-white font-black rounded-lg hover:bg-primary/80 transition-colors shadow-sm disabled:opacity-50"
+                  >
+                    Save
+                  </button>
+                </div>
+                {aliasMessage && (
+                  <div
+                    className={`text-xs font-bold pt-1 transition-opacity animate-pulse ${aliasMessage.type === 'success' ? 'text-green-500' : 'text-red-500'
+                      }`}
+                  >
+                    {aliasMessage.text}
+                  </div>
+                )}
               </div>
 
               <div className="text-[10px] font-black text-[#ed4141] mt-2 mb-4 leading-relaxed tracking-wide uppercase border border-[#ed4141]/30 bg-[#ed4141]/10 p-3 rounded-lg text-center">
