@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { getOrCreateUser } from '../utils/user_balance';
-import { verifyEvent } from 'nostr-tools';
+import { nip19, verifyEvent } from 'nostr-tools';
 
 export const verify = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -50,7 +50,8 @@ export const verify = async (req: Request, res: Response): Promise<void> => {
     }
 
     // 5. Fetch or create user
-    const user = await getOrCreateUser(event.pubkey);
+    const pubkey = nip19.npubEncode(event.pubkey);
+    const user = await getOrCreateUser(pubkey);
 
     // 6. Generate session token
     const token = jwt.sign({ pubkey: user.pubkey }, jwtSecret, { expiresIn: '1h' });
