@@ -5,6 +5,8 @@ import MinesGame from '../models/games/mines';
 import Cryptocurrency from '../models/cryptocurrency';
 import { generateServerSeed, generateGameSeed, GameSeed } from '../utils/game_seed';
 import { updateUserBalance } from '../utils/user_balance';
+import { broadcast } from '../utils/websocket';
+import User from '../models/user';
 
 const MINES_HOUSE_EDGE = Number(process.env.MINES_HOUSE_EDGE) || 0.01; // 1% default
 
@@ -158,6 +160,29 @@ export const revealOne = async (req: AuthenticatedRequest, res: Response): Promi
     if (cellType === 'bomb') {
       game.status = 'LOST';
       await game.save();
+
+      // Broadcast loss
+      try {
+        const user = await User.findById(game.user_id);
+        const currency = await Cryptocurrency.findById(game.currency_id);
+        if (user && currency) {
+          const netPayout = -game.wager_amount;
+          const amountFloat = Math.abs(netPayout) / Math.pow(10, currency.decimal_places);
+          broadcast({
+            type: 'bet',
+            from: user.alias ? `@${user.alias}` : user.pubkey,
+            content: {
+              payout: netPayout,
+              fiatCode: currency.symbol === 'BTC' ? 'USD' : currency.symbol,
+              bitcoinAmount: amountFloat,
+              game: 'Mines'
+            }
+          });
+        }
+      } catch (err) {
+        console.error('Error broadcasting result:', err);
+      }
+
       res.status(200).json({
         success: false,
         serverSeed: game.server_seed,
@@ -213,6 +238,28 @@ export const cashOut = async (req: AuthenticatedRequest, res: Response): Promise
     game.status = 'CASHED_OUT';
     game.completed_at = new Date();
     await game.save();
+
+    // Broadcast win
+    try {
+      const user = await User.findById(game.user_id);
+      const currency = await Cryptocurrency.findById(game.currency_id);
+      if (user && currency) {
+        const netPayout = payout - game.wager_amount;
+        const amountFloat = Math.abs(netPayout) / Math.pow(10, currency.decimal_places);
+        broadcast({
+          type: 'bet',
+          from: user.alias ? `@${user.alias}` : user.pubkey,
+          content: {
+            payout: netPayout,
+            fiatCode: currency.symbol === 'BTC' ? 'USD' : currency.symbol,
+            bitcoinAmount: amountFloat,
+            game: 'Mines'
+          }
+        });
+      }
+    } catch (err) {
+      console.error('Error broadcasting result:', err);
+    }
 
     // Credit Balance (Payout)
     const currency = game.currency_id as any;

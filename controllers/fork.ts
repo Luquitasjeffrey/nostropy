@@ -5,6 +5,8 @@ import Cryptocurrency from '../models/cryptocurrency';
 import { updateUserBalance } from '../utils/user_balance';
 import { generateServerSeed, generateGameSeed, GameSeed } from '../utils/game_seed';
 import { connectDB } from '../utils/db';
+import { broadcast } from '../utils/websocket';
+import User from '../models/user';
 
 const FORK_HOUSE_EDGE = Number(process.env.FORK_HOUSE_EDGE) || 0.02;
 
@@ -167,6 +169,29 @@ export const setClientSeed = async (req: AuthenticatedRequest, res: Response): P
     game.completed_at = new Date();
 
     await game.save();
+
+    // Broadcast results
+    try {
+      const user = await User.findById(game.user_id);
+      const currency = await Cryptocurrency.findById(game.currency_id);
+      if (user && currency) {
+        const netPayout = game.payout - game.wager_amount;
+        const amountFloat = Math.abs(netPayout) / Math.pow(10, currency.decimal_places);
+
+        broadcast({
+          type: 'bet',
+          from: user.alias ? `@${user.alias}` : user.pubkey,
+          content: {
+            payout: netPayout,
+            fiatCode: currency.symbol === 'BTC' ? 'USD' : currency.symbol,
+            bitcoinAmount: amountFloat,
+            game: 'Fork'
+          }
+        });
+      }
+    } catch (err) {
+      console.error('Error broadcasting result:', err);
+    }
 
     res.status(200).json({
       status,

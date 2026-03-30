@@ -8,6 +8,9 @@ import blackjackRoutes from './routes/blackjack';
 import forkRoutes from './routes/fork';
 import userRoutes from './routes/user';
 import authRoutes from './routes/auth';
+import chatRoutes from './routes/chat';
+import { initWebSocket } from './utils/websocket';
+import { Server } from 'http';
 
 dotenv.config();
 
@@ -25,13 +28,17 @@ app.use('/api/games/blackjack', blackjackRoutes);
 app.use('/api/games/fork', forkRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Database connection
 connectDB()
   .then(() => {
-    app.listen(port, host, () => {
+    const server = app.listen(port, host, () => {
       console.log(`Server is running on http://${host}:${port}`);
     });
+
+    // Initialize WebSocket server
+    initWebSocket(server as Server);
   })
   .catch((err) => {
     console.error('Failed to connect to MongoDB', err);

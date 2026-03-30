@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Send, Trophy, Skull, MessageSquare, X } from 'lucide-react';
+import { finalizeEvent, nip19 } from 'nostr-tools';
+import { API_URL } from '../config';
+import { authRequest } from '../utils/api';
 
 interface BetResult {
   payout: number;
@@ -16,12 +19,7 @@ interface ChatMessage {
   timestamp: number;
 }
 
-const DUMMY_MESSAGES: ChatMessage[] = [
-  { id: '1', type: 'message', from: '@AliasUsuario', content: 'Hey, this casino is very cool', timestamp: Date.now() - 1000 * 60 * 5 },
-  { id: '2', type: 'bet', from: 'npub5234x...', content: { payout: 300, fiatCode: 'USD', bitcoinAmount: 0.0013, game: 'blackjack' }, timestamp: Date.now() - 1000 * 60 * 4 },
-  { id: '3', type: 'message', from: '@AliasUsuario2', content: 'I just won 5k!!!', timestamp: Date.now() - 1000 * 60 * 3 },
-  { id: '4', type: 'bet', from: '@AliasUsuario3', content: { payout: -300, fiatCode: 'USD', bitcoinAmount: 0.0013, game: 'blackjack' }, timestamp: Date.now() - 1000 * 60 * 2 },
-];
+const DUMMY_MESSAGES: ChatMessage[] = []; // Clear dummy messages for production use
 
 interface LiveChatProps {
   isOpen: boolean;
@@ -31,27 +29,94 @@ interface LiveChatProps {
 export function LiveChat({ isOpen, setIsOpen }: LiveChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>(DUMMY_MESSAGES);
   const [inputValue, setInputValue] = useState('');
+  const [btcPrice, setBtcPrice] = useState<number>(60000); // Default placeholder
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const fetchPrice = async () => {
+      try {
+        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+        const data = await response.json();
+        if (data.bitcoin?.usd) {
+          setBtcPrice(data.bitcoin.usd);
+        }
+      } catch (err) {
+        console.error('Failed to fetch BTC price for chat:', err);
+      }
+    };
+    fetchPrice();
+    const interval = setInterval(fetchPrice, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  useEffect(() => {
+    const wsUrl = API_URL.replace('http', 'ws');
+    const ws = new WebSocket(wsUrl);
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        const newMessage: ChatMessage = {
+          id: Date.now().toString() + Math.random(),
+          ...data,
+          timestamp: Date.now(),
+        };
+        setMessages((prev) => [...prev, newMessage].slice(-50)); // Keep last 50 messages
+      } catch (err) {
+        console.error('Error parsing WS message:', err);
+      }
+    };
+
+    return () => ws.close();
+  }, []);
+
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
 
-    const newMessage: ChatMessage = {
-      id: Date.now().toString(),
-      type: 'message',
-      from: '@You',
-      content: inputValue,
-      timestamp: Date.now(),
-    };
+    try {
+      const nsec = localStorage.getItem('nostr_nsec');
+      if (!nsec) {
+        alert('You must be logged in to send messages');
+        return;
+      }
 
-    setMessages([...messages, newMessage]);
-    setInputValue('');
+      const decoded = nip19.decode(nsec);
+      if (decoded.type !== 'nsec') throw new Error('Invalid nsec');
+      const privateKey = decoded.data as Uint8Array;
+
+      const eventTemplate = {
+        kind: 1, // Standard text note
+        created_at: Math.floor(Date.now() / 1000),
+        tags: [],
+        content: inputValue,
+      };
+
+      const signedEvent = finalizeEvent(eventTemplate, privateKey);
+
+      const res = await authRequest(`${API_URL}/api/chat/send`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ event: signedEvent }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to send message');
+      }
+
+      setInputValue('');
+    } catch (err: any) {
+      console.error('Error sending message:', err);
+      alert(err.message || 'Error sending message');
+    }
   };
 
   return (
@@ -114,7 +179,7 @@ export function LiveChat({ isOpen, setIsOpen }: LiveChatProps) {
                   <div className={`text-sm flex items-center space-x-2 font-bold ${(msg.content as BetResult).payout > 0 ? 'text-primary' : 'text-danger'}`}>
                     {(msg.content as BetResult).payout > 0 ? <Trophy size={14} /> : <Skull size={14} />}
                     <span>
-                      {msg.from} {(msg.content as BetResult).payout > 0 ? 'Won' : 'Lost'} ${Math.abs((msg.content as BetResult).payout)} {(msg.content as BetResult).fiatCode} (₿ {(msg.content as BetResult).bitcoinAmount}) on {(msg.content as BetResult).game}
+                      {msg.from} {(msg.content as BetResult).payout > 0 ? 'Won' : 'Lost'} ${(Math.abs((msg.content as BetResult).bitcoinAmount) * btcPrice).toLocaleString(undefined, { maximumFractionDigits: 2 })} USD (₿ {(msg.content as BetResult).bitcoinAmount}) on {(msg.content as BetResult).game}
                     </span>
                   </div>
                 )}

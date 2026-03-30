@@ -6,6 +6,8 @@ import { Game } from '../models/games/base';
 import Cryptocurrency from '../models/cryptocurrency';
 import { generateServerSeed, generateGameSeed, GameSeed } from '../utils/game_seed';
 import { updateUserBalance } from '../utils/user_balance';
+import { broadcast } from '../utils/websocket';
+import User from '../models/user';
 
 const SUITS: ICard['suit'][] = ['hearts', 'diamonds', 'clubs', 'spades'];
 const RANKS: ICard['rank'][] = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
@@ -458,4 +460,27 @@ async function resolveGameMechanics(game: any, seed: string) {
   }
 
   await game.save();
+
+  // Broadcast results
+  try {
+    const user = await User.findById(game.user_id);
+    const currency = await Cryptocurrency.findById(game.currency_id);
+    if (user && currency) {
+      const netPayout = game.payout - game.wager_amount;
+      const amountFloat = Math.abs(netPayout) / Math.pow(10, currency.decimal_places);
+
+      broadcast({
+        type: 'bet',
+        from: user.alias ? `@${user.alias}` : user.pubkey,
+        content: {
+          payout: netPayout,
+          fiatCode: currency.symbol === 'BTC' ? 'USD' : currency.symbol, // simplified for demo
+          bitcoinAmount: amountFloat,
+          game: 'Blackjack'
+        }
+      });
+    }
+  } catch (err) {
+    console.error('Error broadcasting result:', err);
+  }
 }
