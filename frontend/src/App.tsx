@@ -6,6 +6,7 @@ import ForkPage from './components/ForkPage';
 import BaccaratPage from './components/BaccaratPage';
 import { Pickaxe, Dices, Spade, GitFork, Layers, Droplets } from 'lucide-react';
 import { NostrIdentityManager } from './components/NostrIdentityManager';
+import { LiveChat } from './components/LiveChat';
 import logoImg from './assets/logo.png';
 import { authRequest } from './utils/api';
 
@@ -18,6 +19,7 @@ function App() {
   const [currentGame, setCurrentGame] = useState<
     'MINES' | 'DICE' | 'BLACKJACK' | 'BACCARAT' | 'FORK'
   >('BLACKJACK');
+  const [isChatOpen, setIsChatOpen] = useState(true);
 
   useEffect(() => {
     // Check if nostr identity is persisted
@@ -139,107 +141,110 @@ function App() {
         </div>
       </header>
 
-      {/* Game Tabs */}
-      <div className="w-full max-w-6xl mx-auto px-4 mt-8 flex space-x-4">
-        <button
-          onClick={() => setCurrentGame('DICE')}
-          className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${
-            currentGame === 'DICE'
-              ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
-              : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
-          }`}
-        >
-          <Dices size={20} />
-          <span>Satoshi Dice</span>
-        </button>
-        <button
-          onClick={() => setCurrentGame('MINES')}
-          className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${
-            currentGame === 'MINES'
-              ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
-              : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
-          }`}
-        >
-          <Pickaxe size={20} />
-          <span>Mines</span>
-        </button>
-        <button
-          onClick={() => setCurrentGame('BLACKJACK')}
-          className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${
-            currentGame === 'BLACKJACK'
-              ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
-              : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
-          }`}
-        >
-          <Spade size={20} />
-          <span>Blackjack</span>
-        </button>
-        <button
-          onClick={() => setCurrentGame('BACCARAT')}
-          className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${
-            currentGame === 'BACCARAT'
-              ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
-              : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
-          }`}
-        >
-          <Layers size={20} />
-          <span>Baccarat</span>
-        </button>
-        <button
-          onClick={() => setCurrentGame('FORK')}
-          className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${
-            currentGame === 'FORK'
-              ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
-              : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
-          }`}
-        >
-          <GitFork size={20} />
-          <span>Fork</span>
-        </button>
-      </div>
+      <div className="flex flex-1 w-full overflow-hidden">
+        {/* Main Content Area */}
+        <div className={`flex-1 flex flex-col items-center overflow-y-auto transition-all duration-300 ${isChatOpen ? 'pr-[350px]' : 'pr-0'}`}>
+          {/* Game Tabs */}
+          <div className="w-full max-w-6xl mx-auto px-4 mt-8 flex space-x-4">
+            <button
+              onClick={() => setCurrentGame('DICE')}
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'DICE'
+                ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
+                : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
+                }`}
+            >
+              <Dices size={20} />
+              <span>Satoshi Dice</span>
+            </button>
+            <button
+              onClick={() => setCurrentGame('MINES')}
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'MINES'
+                ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
+                : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
+                }`}
+            >
+              <Pickaxe size={20} />
+              <span>Mines</span>
+            </button>
+            <button
+              onClick={() => setCurrentGame('BLACKJACK')}
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'BLACKJACK'
+                ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
+                : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
+                }`}
+            >
+              <Spade size={20} />
+              <span>Blackjack</span>
+            </button>
+            <button
+              onClick={() => setCurrentGame('BACCARAT')}
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'BACCARAT'
+                ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
+                : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
+                }`}
+            >
+              <Layers size={20} />
+              <span>Baccarat</span>
+            </button>
+            <button
+              onClick={() => setCurrentGame('FORK')}
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'FORK'
+                ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
+                : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
+                }`}
+            >
+              <GitFork size={20} />
+              <span>Fork</span>
+            </button>
+          </div>
 
-      <main className="w-full flex-1 py-12">
-        {currentGame === 'MINES' && (
-          <MinesPage
-            playerPubkey={playerPubkey}
-            allBalances={allBalances}
-            prices={prices}
-            onGameEnd={() => fetchBalance(playerPubkey)}
-          />
-        )}
-        {currentGame === 'DICE' && (
-          <DicePage
-            playerPubkey={playerPubkey}
-            allBalances={allBalances}
-            prices={prices}
-            onGameEnd={() => fetchBalance(playerPubkey)}
-          />
-        )}
-        {currentGame === 'BLACKJACK' && (
-          <BlackjackPage
-            playerPubkey={playerPubkey}
-            allBalances={allBalances}
-            prices={prices}
-            onGameEnd={() => fetchBalance(playerPubkey)}
-          />
-        )}
-        {currentGame === 'BACCARAT' && (
-          <BaccaratPage
-            playerPubkey={playerPubkey}
-            allBalances={allBalances}
-            prices={prices}
-            onGameEnd={() => fetchBalance(playerPubkey)}
-          />
-        )}
-        {currentGame === 'FORK' && (
-          <ForkPage
-            playerPubkey={playerPubkey}
-            allBalances={allBalances}
-            prices={prices}
-            onGameEnd={() => fetchBalance(playerPubkey)}
-          />
-        )}
-      </main>
+          <main className="w-full flex-1 py-12">
+            {currentGame === 'MINES' && (
+              <MinesPage
+                playerPubkey={playerPubkey}
+                allBalances={allBalances}
+                prices={prices}
+                onGameEnd={() => fetchBalance(playerPubkey)}
+              />
+            )}
+            {currentGame === 'DICE' && (
+              <DicePage
+                playerPubkey={playerPubkey}
+                allBalances={allBalances}
+                prices={prices}
+                onGameEnd={() => fetchBalance(playerPubkey)}
+              />
+            )}
+            {currentGame === 'BLACKJACK' && (
+              <BlackjackPage
+                playerPubkey={playerPubkey}
+                allBalances={allBalances}
+                prices={prices}
+                onGameEnd={() => fetchBalance(playerPubkey)}
+              />
+            )}
+            {currentGame === 'BACCARAT' && (
+              <BaccaratPage
+                playerPubkey={playerPubkey}
+                allBalances={allBalances}
+                prices={prices}
+                onGameEnd={() => fetchBalance(playerPubkey)}
+              />
+            )}
+            {currentGame === 'FORK' && (
+              <ForkPage
+                playerPubkey={playerPubkey}
+                allBalances={allBalances}
+                prices={prices}
+                onGameEnd={() => fetchBalance(playerPubkey)}
+              />
+            )}
+          </main>
+        </div>
+
+        {/* Live Chat Sidebar */}
+        <LiveChat isOpen={isChatOpen} setIsOpen={setIsChatOpen} />
+      </div>
     </div>
   );
 }
