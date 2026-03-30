@@ -19,7 +19,7 @@ function App() {
   const [currentGame, setCurrentGame] = useState<
     'MINES' | 'DICE' | 'BLACKJACK' | 'BACCARAT' | 'FORK'
   >('BLACKJACK');
-  const [isChatOpen, setIsChatOpen] = useState(true);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   useEffect(() => {
     // Check if nostr identity is persisted
