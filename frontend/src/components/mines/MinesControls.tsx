@@ -74,30 +74,31 @@ export function MinesControls({
             </div>
           </div>
         </div>
+
+        {/* Main Action Button */}
+        <div>
+          {isPlaying ? (
+            <Button
+              className="w-full text-lg shadow-[0_4px_0_0_#16a34a] hover:shadow-[0_2px_0_0_#16a34a]"
+              variant="success"
+              size="lg"
+              disabled={!canCash}
+              onClick={cashOut}
+            >
+              {canCash ? `Cashout ${(wager * multiplier || 0).toFixed(2)}` : 'Cashout'}
+            </Button>
+          ) : (
+            <Button
+              className="w-full text-lg shadow-[0_4px_0_0_#00c700] hover:shadow-[0_2px_0_0_#00c700]"
+              size="lg"
+              onClick={startGame}
+            >
+              Bet
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* Main Action Button */}
-      <div className="mt-auto pt-4">
-        {isPlaying ? (
-          <Button
-            className="w-full text-lg shadow-[0_4px_0_0_#16a34a] hover:shadow-[0_2px_0_0_#16a34a]"
-            variant="success"
-            size="lg"
-            disabled={!canCash}
-            onClick={cashOut}
-          >
-            {canCash ? `Cashout ${(wager * multiplier || 0).toFixed(2)}` : 'Cashout'}
-          </Button>
-        ) : (
-          <Button
-            className="w-full text-lg shadow-[0_4px_0_0_#00c700] hover:shadow-[0_2px_0_0_#00c700]"
-            size="lg"
-            onClick={startGame}
-          >
-            Bet
-          </Button>
-        )}
-      </div>
     </div>
   );
 }
