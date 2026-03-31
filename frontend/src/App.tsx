@@ -4,7 +4,8 @@ import DicePage from './components/DicePage';
 import BlackjackPage from './components/BlackjackPage';
 import ForkPage from './components/ForkPage';
 import BaccaratPage from './components/BaccaratPage';
-import { Pickaxe, Dices, Spade, GitFork, Layers, Droplets } from 'lucide-react';
+import PlinkoPage from './components/PlinkoPage';
+import { Pickaxe, Dices, Spade, GitFork, Layers, Droplets, Network } from 'lucide-react';
 import { NostrIdentityManager } from './components/NostrIdentityManager';
 import { LiveChat } from './components/LiveChat';
 import logoImg from './assets/logo.png';
@@ -17,7 +18,7 @@ function App() {
   const [allBalances, setAllBalances] = useState<any[]>([]);
   const [prices, setPrices] = useState<Record<string, number>>({ BTC: 60000, USDT: 1 }); // Reasonable defaults
   const [currentGame, setCurrentGame] = useState<
-    'MINES' | 'DICE' | 'BLACKJACK' | 'BACCARAT' | 'FORK'
+    'MINES' | 'DICE' | 'BLACKJACK' | 'BACCARAT' | 'FORK' | 'PLINKO'
   >('BLACKJACK');
   const [isChatOpen, setIsChatOpen] = useState(false);
 
@@ -150,58 +151,63 @@ function App() {
           <div className="w-full max-w-6xl mx-auto px-4 mt-8 flex space-x-4">
             <button
               onClick={() => setCurrentGame('DICE')}
-              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${
-                currentGame === 'DICE'
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'DICE'
                   ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
                   : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
-              }`}
+                }`}
             >
               <Dices size={20} />
               <span>Satoshi Dice</span>
             </button>
             <button
               onClick={() => setCurrentGame('MINES')}
-              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${
-                currentGame === 'MINES'
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'MINES'
                   ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
                   : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
-              }`}
+                }`}
             >
               <Pickaxe size={20} />
               <span>Mines</span>
             </button>
             <button
               onClick={() => setCurrentGame('BLACKJACK')}
-              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${
-                currentGame === 'BLACKJACK'
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'BLACKJACK'
                   ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
                   : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
-              }`}
+                }`}
             >
               <Spade size={20} />
               <span>Blackjack</span>
             </button>
             <button
               onClick={() => setCurrentGame('BACCARAT')}
-              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${
-                currentGame === 'BACCARAT'
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'BACCARAT'
                   ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
                   : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
-              }`}
+                }`}
             >
               <Layers size={20} />
               <span>Baccarat</span>
             </button>
             <button
               onClick={() => setCurrentGame('FORK')}
-              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${
-                currentGame === 'FORK'
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'FORK'
                   ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
                   : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
-              }`}
+                }`}
             >
               <GitFork size={20} />
               <span>Fork</span>
+            </button>
+            <button
+              onClick={() => setCurrentGame('PLINKO')}
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'PLINKO'
+                  ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
+                  : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
+                }`}
+            >
+              <Network size={20} />
+              <span>Plinko</span>
             </button>
           </div>
 
@@ -240,6 +246,14 @@ function App() {
             )}
             {currentGame === 'FORK' && (
               <ForkPage
+                playerPubkey={playerPubkey}
+                allBalances={allBalances}
+                prices={prices}
+                onGameEnd={() => fetchBalance(playerPubkey)}
+              />
+            )}
+            {currentGame === 'PLINKO' && (
+              <PlinkoPage
                 playerPubkey={playerPubkey}
                 allBalances={allBalances}
                 prices={prices}
