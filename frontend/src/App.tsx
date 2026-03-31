@@ -143,55 +143,62 @@ function App() {
 
       <div className="flex flex-1 w-full overflow-hidden">
         {/* Main Content Area */}
-        <div className={`flex-1 flex flex-col items-center overflow-y-auto transition-all duration-300 ${isChatOpen ? 'pr-[350px]' : 'pr-0'}`}>
+        <div
+          className={`flex-1 flex flex-col items-center overflow-y-auto transition-all duration-300 ${isChatOpen ? 'pr-[350px]' : 'pr-0'}`}
+        >
           {/* Game Tabs */}
           <div className="w-full max-w-6xl mx-auto px-4 mt-8 flex space-x-4">
             <button
               onClick={() => setCurrentGame('DICE')}
-              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'DICE'
-                ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
-                : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
-                }`}
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${
+                currentGame === 'DICE'
+                  ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
+                  : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
+              }`}
             >
               <Dices size={20} />
               <span>Satoshi Dice</span>
             </button>
             <button
               onClick={() => setCurrentGame('MINES')}
-              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'MINES'
-                ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
-                : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
-                }`}
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${
+                currentGame === 'MINES'
+                  ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
+                  : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
+              }`}
             >
               <Pickaxe size={20} />
               <span>Mines</span>
             </button>
             <button
               onClick={() => setCurrentGame('BLACKJACK')}
-              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'BLACKJACK'
-                ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
-                : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
-                }`}
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${
+                currentGame === 'BLACKJACK'
+                  ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
+                  : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
+              }`}
             >
               <Spade size={20} />
               <span>Blackjack</span>
             </button>
             <button
               onClick={() => setCurrentGame('BACCARAT')}
-              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'BACCARAT'
-                ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
-                : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
-                }`}
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${
+                currentGame === 'BACCARAT'
+                  ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
+                  : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
+              }`}
             >
               <Layers size={20} />
               <span>Baccarat</span>
             </button>
             <button
               onClick={() => setCurrentGame('FORK')}
-              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'FORK'
-                ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
-                : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
-                }`}
+              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${
+                currentGame === 'FORK'
+                  ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
+                  : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
+              }`}
             >
               <GitFork size={20} />
               <span>Fork</span>

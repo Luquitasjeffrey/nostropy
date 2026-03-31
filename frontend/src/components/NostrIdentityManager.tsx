@@ -16,7 +16,10 @@ export function NostrIdentityManager({ playerPubkey, setPlayerPubkey }: NostrIde
   const [userAlias, setUserAlias] = useState<string | null>(null);
   const [inputAlias, setInputAlias] = useState('');
   const [isSavingAlias, setIsSavingAlias] = useState(false);
-  const [aliasMessage, setAliasMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [aliasMessage, setAliasMessage] = useState<{
+    text: string;
+    type: 'success' | 'error';
+  } | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -152,7 +155,11 @@ export function NostrIdentityManager({ playerPubkey, setPlayerPubkey }: NostrIde
       >
         <KeyRound size={16} />
         <span className="truncate max-w-[200px]">
-          {playerPubkey && npub ? (userAlias ? `@${userAlias}` : npub.slice(0, 10) + '...') : 'Login'}
+          {playerPubkey && npub
+            ? userAlias
+              ? `@${userAlias}`
+              : npub.slice(0, 10) + '...'
+            : 'Login'}
         </span>
       </button>
 
@@ -233,8 +240,9 @@ export function NostrIdentityManager({ playerPubkey, setPlayerPubkey }: NostrIde
                 </div>
                 {aliasMessage && (
                   <div
-                    className={`text-xs font-bold pt-1 transition-opacity animate-pulse ${aliasMessage.type === 'success' ? 'text-green-500' : 'text-red-500'
-                      }`}
+                    className={`text-xs font-bold pt-1 transition-opacity animate-pulse ${
+                      aliasMessage.type === 'success' ? 'text-green-500' : 'text-red-500'
+                    }`}
                   >
                     {aliasMessage.text}
                   </div>

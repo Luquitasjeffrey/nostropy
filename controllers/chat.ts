@@ -32,7 +32,7 @@ export const sendMessage = async (req: AuthenticatedRequest, res: Response): Pro
     broadcast({
       type: 'message',
       from: req.user?.alias ? `@${req.user.alias}` : 'Anonymous',
-      content: event.content
+      content: event.content,
     });
 
     res.status(200).json({ success: true });

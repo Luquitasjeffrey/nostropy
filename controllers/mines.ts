@@ -175,8 +175,8 @@ export const revealOne = async (req: AuthenticatedRequest, res: Response): Promi
               payout: netPayout,
               fiatCode: currency.symbol === 'BTC' ? 'USD' : currency.symbol,
               bitcoinAmount: amountFloat,
-              game: 'Mines'
-            }
+              game: 'Mines',
+            },
           });
         }
       } catch (err) {
@@ -253,8 +253,8 @@ export const cashOut = async (req: AuthenticatedRequest, res: Response): Promise
             payout: netPayout,
             fiatCode: currency.symbol === 'BTC' ? 'USD' : currency.symbol,
             bitcoinAmount: amountFloat,
-            game: 'Mines'
-          }
+            game: 'Mines',
+          },
         });
       }
     } catch (err) {

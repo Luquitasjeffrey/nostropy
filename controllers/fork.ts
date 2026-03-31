@@ -185,8 +185,8 @@ export const setClientSeed = async (req: AuthenticatedRequest, res: Response): P
             payout: netPayout,
             fiatCode: currency.symbol === 'BTC' ? 'USD' : currency.symbol,
             bitcoinAmount: amountFloat,
-            game: 'Fork'
-          }
+            game: 'Fork',
+          },
         });
       }
     } catch (err) {

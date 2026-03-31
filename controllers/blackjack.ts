@@ -476,8 +476,8 @@ async function resolveGameMechanics(game: any, seed: string) {
           payout: netPayout,
           fiatCode: currency.symbol === 'BTC' ? 'USD' : currency.symbol, // simplified for demo
           bitcoinAmount: amountFloat,
-          game: 'Blackjack'
-        }
+          game: 'Blackjack',
+        },
       });
     }
   } catch (err) {

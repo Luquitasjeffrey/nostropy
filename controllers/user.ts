@@ -138,7 +138,7 @@ export const getAlias = async (req: Request, res: Response): Promise<void> => {
 
     await connectDB();
     // Use getOrCreateUser which guarantees retrieving a user model, or just check DB directly.
-    // If getting alias for ANY pubkey, we shouldn't create a user just to check. 
+    // If getting alias for ANY pubkey, we shouldn't create a user just to check.
     // We can import User or use `mongoose.model('User')`.
     const mongoose = require('mongoose');
     const User = mongoose.model('User');

@@ -36,7 +36,9 @@ export function LiveChat({ isOpen, setIsOpen }: LiveChatProps) {
   useEffect(() => {
     const fetchPrice = async () => {
       try {
-        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+        const response = await fetch(
+          'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd'
+        );
         const data = await response.json();
         if (data.bitcoin?.usd) {
           setBtcPrice(data.bitcoin.usd);
@@ -124,21 +126,23 @@ export function LiveChat({ isOpen, setIsOpen }: LiveChatProps) {
       {/* Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed top-24 right-6 z-50 p-3 rounded-full bg-primary text-black shadow-lg hover:bg-primaryHover transition-all duration-300 pointer-events-auto ${isOpen ? 'translate-x-[50px] opacity-0 pointer-events-none' : 'translate-x-0 opacity-100'
-          }`}
+        className={`fixed top-24 right-6 z-50 p-3 rounded-full bg-primary text-black shadow-lg hover:bg-primaryHover transition-all duration-300 pointer-events-auto ${
+          isOpen ? 'translate-x-[50px] opacity-0 pointer-events-none' : 'translate-x-0 opacity-100'
+        }`}
       >
         <MessageSquare size={24} />
       </button>
 
       <div
-        className={`flex flex-col h-full w-[350px] fixed right-0 top-0 pt-20 pb-6 z-40 transition-transform duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'
-          }`}
+        className={`flex flex-col h-full w-[350px] fixed right-0 top-0 pt-20 pb-6 z-40 transition-transform duration-300 ${
+          isOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
       >
         {/* Background with gradient: transparent on the left, solid black on the right */}
         <div
           className="absolute inset-x-0 inset-y-0 -z-10"
           style={{
-            background: 'linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.95) 100%)'
+            background: 'linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.95) 100%)',
           }}
         />
 
@@ -176,10 +180,21 @@ export function LiveChat({ isOpen, setIsOpen }: LiveChatProps) {
                     <span className="text-white">{msg.content as string}</span>
                   </div>
                 ) : (
-                  <div className={`text-sm flex items-center space-x-2 font-bold ${(msg.content as BetResult).payout > 0 ? 'text-primary' : 'text-danger'}`}>
-                    {(msg.content as BetResult).payout > 0 ? <Trophy size={14} /> : <Skull size={14} />}
+                  <div
+                    className={`text-sm flex items-center space-x-2 font-bold ${(msg.content as BetResult).payout > 0 ? 'text-primary' : 'text-danger'}`}
+                  >
+                    {(msg.content as BetResult).payout > 0 ? (
+                      <Trophy size={14} />
+                    ) : (
+                      <Skull size={14} />
+                    )}
                     <span>
-                      {msg.from} {(msg.content as BetResult).payout > 0 ? 'Won' : 'Lost'} ${(Math.abs((msg.content as BetResult).bitcoinAmount) * btcPrice).toLocaleString(undefined, { maximumFractionDigits: 2 })} USD (₿ {(msg.content as BetResult).bitcoinAmount}) on {(msg.content as BetResult).game}
+                      {msg.from} {(msg.content as BetResult).payout > 0 ? 'Won' : 'Lost'} $
+                      {(
+                        Math.abs((msg.content as BetResult).bitcoinAmount) * btcPrice
+                      ).toLocaleString(undefined, { maximumFractionDigits: 2 })}{' '}
+                      USD (₿ {(msg.content as BetResult).bitcoinAmount}) on{' '}
+                      {(msg.content as BetResult).game}
                     </span>
                   </div>
                 )}

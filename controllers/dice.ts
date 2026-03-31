@@ -143,8 +143,8 @@ export const setClientSeed = async (req: AuthenticatedRequest, res: Response): P
             payout: netPayout,
             fiatCode: currency.symbol === 'BTC' ? 'USD' : currency.symbol,
             bitcoinAmount: amountFloat,
-            game: 'Satoshi Dice'
-          }
+            game: 'Satoshi Dice',
+          },
         });
       }
     } catch (err) {

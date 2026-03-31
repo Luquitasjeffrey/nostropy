@@ -98,7 +98,6 @@ export function MinesControls({
           )}
         </div>
       </div>
-
     </div>
   );
 }
