@@ -1,6 +1,8 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import { connectDB } from './utils/db';
 import minesRoutes from './routes/mines';
 import diceRoutes from './routes/dice';
@@ -9,10 +11,10 @@ import forkRoutes from './routes/fork';
 import userRoutes from './routes/user';
 import authRoutes from './routes/auth';
 import chatRoutes from './routes/chat';
+import lnRoutes from './routes/ln';
 import { initWebSocket } from './utils/websocket';
 import { Server } from 'http';
 
-dotenv.config();
 
 const app = express();
 const port = Number(process.env.PORT || 5000);
@@ -29,6 +31,7 @@ app.use('/api/games/fork', forkRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/ln', lnRoutes);
 
 // Database connection
 connectDB()

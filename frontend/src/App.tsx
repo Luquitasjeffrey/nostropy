@@ -5,9 +5,10 @@ import BlackjackPage from './components/BlackjackPage';
 import ForkPage from './components/ForkPage';
 import BaccaratPage from './components/BaccaratPage';
 import PlinkoPage from './components/PlinkoPage';
-import { Pickaxe, Dices, Spade, GitFork, Layers, Droplets, Network } from 'lucide-react';
+import { Pickaxe, Dices, Spade, GitFork, Layers, Droplets, Network, Bitcoin } from 'lucide-react';
 import { NostrIdentityManager } from './components/NostrIdentityManager';
 import { LiveChat } from './components/LiveChat';
+import { DepositModal } from './components/DepositModal';
 import logoImg from './assets/logo.png';
 import { authRequest } from './utils/api';
 
@@ -21,6 +22,7 @@ function App() {
     'MINES' | 'DICE' | 'BLACKJACK' | 'BACCARAT' | 'FORK' | 'PLINKO'
   >('BLACKJACK');
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
 
   useEffect(() => {
     // Check if nostr identity is persisted
@@ -107,6 +109,16 @@ function App() {
           />
 
           <button
+            onClick={() => setIsDepositModalOpen(true)}
+            disabled={!playerPubkey}
+            className="flex items-center space-x-2 px-3 py-2 bg-[#0f212e] border-2 border-[#1a2d37] hover:border-[#f7931a] hover:text-[#f7931a] rounded-lg text-gray-400 font-black transition-colors shadow-inner disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Deposit Bitcoin"
+          >
+            <Bitcoin size={16} />
+            <span className="hidden sm:inline text-xs uppercase tracking-wider">Deposit</span>
+          </button>
+
+          <button
             onClick={async () => {
               if (!playerPubkey) return;
               try {
@@ -152,8 +164,8 @@ function App() {
             <button
               onClick={() => setCurrentGame('DICE')}
               className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'DICE'
-                  ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
-                  : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
+                ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
+                : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
                 }`}
             >
               <Dices size={20} />
@@ -162,8 +174,8 @@ function App() {
             <button
               onClick={() => setCurrentGame('MINES')}
               className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'MINES'
-                  ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
-                  : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
+                ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
+                : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
                 }`}
             >
               <Pickaxe size={20} />
@@ -172,8 +184,8 @@ function App() {
             <button
               onClick={() => setCurrentGame('BLACKJACK')}
               className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'BLACKJACK'
-                  ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
-                  : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
+                ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
+                : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
                 }`}
             >
               <Spade size={20} />
@@ -182,8 +194,8 @@ function App() {
             <button
               onClick={() => setCurrentGame('BACCARAT')}
               className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'BACCARAT'
-                  ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
-                  : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
+                ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
+                : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
                 }`}
             >
               <Layers size={20} />
@@ -192,8 +204,8 @@ function App() {
             <button
               onClick={() => setCurrentGame('FORK')}
               className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'FORK'
-                  ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
-                  : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
+                ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
+                : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
                 }`}
             >
               <GitFork size={20} />
@@ -202,8 +214,8 @@ function App() {
             <button
               onClick={() => setCurrentGame('PLINKO')}
               className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'PLINKO'
-                  ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
-                  : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
+                ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
+                : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
                 }`}
             >
               <Network size={20} />
@@ -266,6 +278,11 @@ function App() {
         {/* Live Chat Sidebar */}
         <LiveChat isOpen={isChatOpen} setIsOpen={setIsChatOpen} />
       </div>
+
+      <DepositModal
+        isOpen={isDepositModalOpen}
+        onClose={() => setIsDepositModalOpen(false)}
+      />
     </div>
   );
 }
