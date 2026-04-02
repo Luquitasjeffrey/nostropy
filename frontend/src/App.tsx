@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import MinesPage from './components/MinesPage';
 import DicePage from './components/DicePage';
 import BlackjackPage from './components/BlackjackPage';
@@ -9,6 +9,7 @@ import { Pickaxe, Dices, Spade, GitFork, Layers, Droplets, Network, Bitcoin } fr
 import { NostrIdentityManager } from './components/NostrIdentityManager';
 import { LiveChat } from './components/LiveChat';
 import { DepositModal } from './components/DepositModal';
+import { WithdrawModal } from './components/WithdrawModal';
 import logoImg from './assets/logo.png';
 import { authRequest } from './utils/api';
 
@@ -23,6 +24,19 @@ function App() {
   >('BLACKJACK');
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const [isBalanceDropdownOpen, setIsBalanceDropdownOpen] = useState(false);
+  const balanceDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (balanceDropdownRef.current && !balanceDropdownRef.current.contains(event.target as Node)) {
+        setIsBalanceDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     // Check if nostr identity is persisted
@@ -139,17 +153,37 @@ function App() {
             <span className="hidden sm:inline text-xs uppercase tracking-wider">Faucet</span>
           </button>
 
-          <div className="flex flex-col items-end justify-center px-5 py-2 bg-panel rounded-lg border-2 border-[#1a2d37] shadow-inner">
-            <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">
-              Total Balance
-            </span>
-            <span className="text-sm text-white font-black tracking-tight">
-              $
-              {usdBalance.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </span>
+          <div className="relative" ref={balanceDropdownRef}>
+            <button
+              onClick={() => setIsBalanceDropdownOpen(!isBalanceDropdownOpen)}
+              className="flex flex-col items-end justify-center px-5 py-2 bg-panel rounded-lg border-2 border-[#1a2d37] hover:border-gray-500 transition-colors shadow-inner"
+            >
+              <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">
+                Total Balance
+              </span>
+              <span className="text-sm text-white font-black tracking-tight">
+                $
+                {usdBalance.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </span>
+            </button>
+
+            {isBalanceDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-background border-2 border-panel rounded-xl shadow-2xl overflow-hidden z-50">
+                <button
+                  onClick={() => {
+                    setIsWithdrawModalOpen(true);
+                    setIsBalanceDropdownOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-3 text-sm font-bold text-white hover:bg-[#0f212e] transition-colors flex items-center space-x-2"
+                >
+                  <Bitcoin size={16} className="text-[#f7931a]" />
+                  <span>Withdraw BTC</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -282,6 +316,13 @@ function App() {
       <DepositModal
         isOpen={isDepositModalOpen}
         onClose={() => setIsDepositModalOpen(false)}
+      />
+
+      <WithdrawModal
+        isOpen={isWithdrawModalOpen}
+        onClose={() => setIsWithdrawModalOpen(false)}
+        btcPrice={prices.BTC || 60000}
+        onSuccess={() => fetchBalance(playerPubkey)}
       />
     </div>
   );

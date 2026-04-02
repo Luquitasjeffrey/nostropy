@@ -1,8 +1,9 @@
 import { Response } from 'express';
-import { authenticatedLndGrpc, createInvoice, subscribeToInvoice } from 'lightning';
+import { authenticatedLndGrpc, createInvoice, subscribeToInvoice, decodePaymentRequest, getRouteToDestination, pay } from 'lightning';
 import { AuthenticatedRequest } from '../types/express';
 import Invoice from '../models/invoice';
-import { updateUserBalance } from '../utils/user_balance';
+import UserWithdrawal from '../models/userWithdrawal';
+import { updateUserBalance, getUserBalance } from '../utils/user_balance';
 
 const lnd = (function () {
   if (process.env.LND_CERT && process.env.LND_MACAROON && process.env.LND_SOCKET) {
@@ -90,5 +91,94 @@ export const deposit = async (req: AuthenticatedRequest, res: Response): Promise
 };
 
 export const withdraw = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-  res.status(501).json({ error: 'Not Implemented' });
+  try {
+    const pubkey = req.user?.pubkey;
+    if (!pubkey) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    if (req.user?.test) {
+      res.status(403).json({ error: 'Test users cannot withdraw funds' });
+      return;
+    }
+
+    const { paymentRequest } = req.body;
+    if (!paymentRequest || typeof paymentRequest !== 'string') {
+      res.status(400).json({ error: 'Invalid payment request' });
+      return;
+    }
+
+    if (!lnd) {
+      res.status(503).json({ error: 'Lightning node is currently unavailable' });
+      return;
+    }
+
+    // Decode invoice
+    const decoded = await decodePaymentRequest({ lnd, request: paymentRequest });
+    const amount = decoded.tokens;
+
+    if (!amount || amount <= 0) {
+      res.status(400).json({ error: 'Zero-amount invoices are not supported' });
+      return;
+    }
+
+    // Calculate routing fees
+    let maxFee = 0;
+    try {
+      const { route } = await getRouteToDestination({
+        lnd,
+        destination: decoded.destination,
+        tokens: amount,
+      });
+      if (!route) {
+        res.status(400).json({ error: 'Cannot find a route to destination' });
+        return;
+      }
+      maxFee = (route.safe_fee || 0) + 10;
+    } catch (routeErr) {
+      console.warn('Failed to find route directly, estimating max fee', routeErr);
+      res.status(400).json({ error: 'Cannot find a route to destination to calculate fees' });
+      return;
+    }
+
+    // Check balance
+    const userBalance = await getUserBalance(req.user!._id, 'BTC');
+    if (userBalance < amount + maxFee) {
+      res.status(400).json({ error: `Insufficient balance. Need ${amount + maxFee} sats including estimated fees.` });
+      return;
+    }
+
+    // Pre-deduct balance
+    await updateUserBalance(req.user!._id, 'BTC', -(amount + maxFee));
+
+    // Save PENDING withdrawal
+    const withdrawal = new UserWithdrawal({
+      user_npub: pubkey,
+      payment_request: paymentRequest,
+      amount,
+      fees: maxFee,
+      status: 'PENDING'
+    });
+    await withdrawal.save();
+
+    // Pay invoice
+    try {
+      const payment = await pay({ lnd, request: paymentRequest, max_fee: maxFee });
+
+      withdrawal.status = 'CONFIRMED';
+      await withdrawal.save();
+
+      res.status(200).json({ success: true, payment });
+    } catch (payErr: any) {
+      console.error('Lightning payment failed. Manual intervention required:', payErr);
+      withdrawal.status = 'FAILED';
+      await withdrawal.save();
+
+      res.status(500).json({ error: 'Payment failed. Please contact the administrator for a manual refund. Reason: ' + payErr.message });
+    }
+  } catch (error) {
+    console.error('Error processing withdrawal:', error);
+    res.status(500).json({ error: 'Internal server error while processing withdrawal' });
+  }
 };
