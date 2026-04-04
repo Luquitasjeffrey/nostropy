@@ -26,7 +26,12 @@ function App() {
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [isBalanceDropdownOpen, setIsBalanceDropdownOpen] = useState(false);
+  const [isTestMode, setIsTestMode] = useState(() => localStorage.getItem('nostr_test_mode') === 'true');
   const balanceDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    localStorage.setItem('nostr_test_mode', isTestMode.toString());
+  }, [isTestMode]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -98,6 +103,10 @@ function App() {
     return total + amountFloat * price;
   }, 0);
 
+  const btcBalanceObj = allBalances.find((b) => b.symbol === 'BTC');
+  const btcDecimals = btcBalanceObj ? btcBalanceObj.decimal_places : 8;
+  const btcBalanceAmount = btcBalanceObj ? btcBalanceObj.amount / Math.pow(10, btcDecimals) : 0;
+
   return (
     <div className="min-h-screen bg-[#06141d] flex flex-col items-center">
       {/* Global Header */}
@@ -122,36 +131,55 @@ function App() {
             }}
           />
 
-          <button
-            onClick={() => setIsDepositModalOpen(true)}
-            disabled={!playerPubkey}
-            className="flex items-center space-x-2 px-3 py-2 bg-[#0f212e] border-2 border-[#1a2d37] hover:border-[#f7931a] hover:text-[#f7931a] rounded-lg text-gray-400 font-black transition-colors shadow-inner disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Deposit Bitcoin"
-          >
-            <Bitcoin size={16} />
-            <span className="hidden sm:inline text-xs uppercase tracking-wider">Deposit</span>
-          </button>
+          {/* Test Mode Toggle */}
+          <div className="flex items-center space-x-2 bg-panel border-2 border-[#1a2d37] px-3 py-1.5 rounded-lg shadow-inner">
+            <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">Test Mode</span>
+            <button
+              onClick={() => setIsTestMode(!isTestMode)}
+              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${isTestMode ? 'bg-[#f7931a]' : 'bg-gray-600'
+                }`}
+            >
+              <span
+                className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${isTestMode ? 'translate-x-5' : 'translate-x-1'
+                  }`}
+              />
+            </button>
+          </div>
 
-          <button
-            onClick={async () => {
-              if (!playerPubkey) return;
-              try {
-                const res = await authRequest(`${API_URL}/api/user/faucet`, { method: 'POST' });
-                if (res.ok) {
-                  fetchBalance(playerPubkey);
-                } else {
-                  console.error('Failed to request faucet, status:', res.status);
+          {!isTestMode && (
+            <button
+              onClick={() => setIsDepositModalOpen(true)}
+              disabled={!playerPubkey}
+              className="flex items-center space-x-2 px-3 py-2 bg-[#0f212e] border-2 border-[#1a2d37] hover:border-[#f7931a] hover:text-[#f7931a] rounded-lg text-gray-400 font-black transition-colors shadow-inner disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Deposit Bitcoin"
+            >
+              <Bitcoin size={16} />
+              <span className="hidden sm:inline text-xs uppercase tracking-wider">Deposit</span>
+            </button>
+          )}
+
+          {isTestMode && (
+            <button
+              onClick={async () => {
+                if (!playerPubkey) return;
+                try {
+                  const res = await authRequest(`${API_URL}/api/user/faucet`, { method: 'POST' });
+                  if (res.ok) {
+                    fetchBalance(playerPubkey);
+                  } else {
+                    console.error('Failed to request faucet, status:', res.status);
+                  }
+                } catch (err) {
+                  console.error('Error hitting faucet endpoint:', err);
                 }
-              } catch (err) {
-                console.error('Error hitting faucet endpoint:', err);
-              }
-            }}
-            className="flex items-center space-x-2 px-3 py-2 bg-[#0f212e] border-2 border-[#1a2d37] hover:border-primary hover:text-white rounded-lg text-primary font-black transition-colors shadow-inner"
-            title="Reload Test Balance"
-          >
-            <Droplets size={16} />
-            <span className="hidden sm:inline text-xs uppercase tracking-wider">Faucet</span>
-          </button>
+              }}
+              className="flex items-center space-x-2 px-3 py-2 bg-[#0f212e] border-2 border-[#1a2d37] hover:border-primary hover:text-white rounded-lg text-primary font-black transition-colors shadow-inner"
+              title="Reload Test Balance"
+            >
+              <Droplets size={16} />
+              <span className="hidden sm:inline text-xs uppercase tracking-wider">Faucet</span>
+            </button>
+          )}
 
           <div className="relative" ref={balanceDropdownRef}>
             <button
@@ -171,17 +199,35 @@ function App() {
             </button>
 
             {isBalanceDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-background border-2 border-panel rounded-xl shadow-2xl overflow-hidden z-50">
-                <button
-                  onClick={() => {
-                    setIsWithdrawModalOpen(true);
-                    setIsBalanceDropdownOpen(false);
-                  }}
-                  className="w-full text-left px-4 py-3 text-sm font-bold text-white hover:bg-[#0f212e] transition-colors flex items-center space-x-2"
-                >
-                  <Bitcoin size={16} className="text-[#f7931a]" />
-                  <span>Withdraw BTC</span>
-                </button>
+              <div className="absolute right-0 mt-2 w-64 bg-background border-2 border-panel rounded-xl shadow-2xl overflow-hidden z-50">
+                <div className="p-4 border-b-2 border-[#1a2d37] flex flex-col items-center bg-[#06141d]">
+                  <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider mb-1">Available BTC</span>
+                  <div className="flex items-baseline space-x-1">
+                    <span className="text-2xl font-black text-white">{btcBalanceAmount.toFixed(8)}</span>
+                    <span className="text-xs font-bold text-[#f7931a]">BTC</span>
+                  </div>
+                  <span className="text-sm font-bold text-gray-400 mt-1">
+                    ≈ ${usdBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+
+                {!isTestMode && (
+                  <button
+                    onClick={() => {
+                      setIsWithdrawModalOpen(true);
+                      setIsBalanceDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-6 py-4 text-sm font-bold text-white hover:bg-[#0f212e] transition-colors flex items-center justify-center space-x-2"
+                  >
+                    <Bitcoin size={18} className="text-[#f7931a]" />
+                    <span>Withdraw BTC</span>
+                  </button>
+                )}
+                {isTestMode && (
+                  <div className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest text-center bg-[#0a1824]">
+                    No Withdrawals
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -316,6 +362,7 @@ function App() {
       <DepositModal
         isOpen={isDepositModalOpen}
         onClose={() => setIsDepositModalOpen(false)}
+        btcPrice={prices.BTC || 60000}
       />
 
       <WithdrawModal

@@ -6,10 +6,12 @@ import { authRequest } from '../utils/api';
 interface DepositModalProps {
   isOpen: boolean;
   onClose: () => void;
+  btcPrice: number;
 }
 
-export function DepositModal({ isOpen, onClose }: DepositModalProps) {
+export function DepositModal({ isOpen, onClose, btcPrice }: DepositModalProps) {
   const [amount, setAmount] = useState<string>('');
+  const [fiatAmount, setFiatAmount] = useState<string>('');
   const [invoice, setInvoice] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,11 +34,34 @@ export function DepositModal({ isOpen, onClose }: DepositModalProps) {
     if (!isOpen) {
       // Reset state when closed
       setAmount('');
+      setFiatAmount('');
       setInvoice(null);
       setError(null);
       setCopied(false);
     }
   }, [isOpen]);
+
+  const handleFiatChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setFiatAmount(val);
+    const num = parseFloat(val);
+    if (!isNaN(num) && num > 0 && btcPrice > 0) {
+      setAmount(Math.floor((num / btcPrice) * 100_000_000).toString());
+    } else {
+      setAmount('');
+    }
+  };
+
+  const handleSatsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setAmount(val);
+    const num = parseInt(val, 10);
+    if (!isNaN(num) && num > 0 && btcPrice > 0) {
+      setFiatAmount(((num / 100_000_000) * btcPrice).toFixed(2));
+    } else if (val === '') {
+      setFiatAmount('');
+    }
+  };
 
   const handleDeposit = async () => {
     setError(null);
@@ -108,13 +133,31 @@ export function DepositModal({ isOpen, onClose }: DepositModalProps) {
           <div className="space-y-6">
             <div className="space-y-2">
               <label className="text-xs uppercase font-bold text-gray-500 tracking-wider">
+                Amount (USD)
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
+                <input
+                  type="number"
+                  placeholder="0.00"
+                  step="0.01"
+                  value={fiatAmount}
+                  onChange={handleFiatChange}
+                  min="0"
+                  className="w-full bg-[#0f212e] border-2 border-[#1a2d37] rounded-lg pl-8 pr-4 py-3 text-lg font-bold text-white outline-none focus:border-primary transition-colors"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs uppercase font-bold text-gray-500 tracking-wider">
                 Amount (Satoshis)
               </label>
               <input
                 type="number"
                 placeholder="e.g. 10000"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={handleSatsChange}
                 min="1"
                 className="w-full bg-[#0f212e] border-2 border-[#1a2d37] rounded-lg px-4 py-3 text-lg font-bold text-white outline-none focus:border-primary transition-colors"
               />

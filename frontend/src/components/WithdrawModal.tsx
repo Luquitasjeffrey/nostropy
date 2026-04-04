@@ -106,7 +106,7 @@ export function WithdrawModal({ isOpen, onClose, btcPrice, onSuccess }: Withdraw
           <div className="space-y-6">
             <div className="space-y-2">
               <label className="text-xs uppercase font-bold text-gray-500 tracking-wider">
-                Amount (USD)
+                Amount (USD) - <span className="text-gray-600">Optional Guide</span>
               </label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
@@ -146,7 +146,7 @@ export function WithdrawModal({ isOpen, onClose, btcPrice, onSuccess }: Withdraw
 
             <button
               onClick={handleWithdraw}
-              disabled={isLoading || !invoice || !fiatAmount}
+              disabled={isLoading || !invoice}
               className="w-full flex items-center justify-center space-x-2 py-4 bg-primary text-white font-black rounded-lg hover:bg-primary/80 transition-colors shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
