@@ -31,7 +31,11 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem('nostr_test_mode', isTestMode.toString());
-  }, [isTestMode]);
+    // Auto-switch away from "under development" games if test mode is disabled
+    if (!isTestMode && (currentGame === 'BACCARAT' || currentGame === 'PLINKO')) {
+      setCurrentGame('BLACKJACK');
+    }
+  }, [isTestMode, currentGame]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -271,16 +275,18 @@ function App() {
               <Spade size={20} />
               <span>Blackjack</span>
             </button>
-            <button
-              onClick={() => setCurrentGame('BACCARAT')}
-              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'BACCARAT'
-                ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
-                : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
-                }`}
-            >
-              <Layers size={20} />
-              <span>Baccarat</span>
-            </button>
+            {isTestMode && (
+              <button
+                onClick={() => setCurrentGame('BACCARAT')}
+                className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'BACCARAT'
+                  ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
+                  : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
+                  }`}
+              >
+                <Layers size={20} />
+                <span>Baccarat</span>
+              </button>
+            )}
             <button
               onClick={() => setCurrentGame('FORK')}
               className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'FORK'
@@ -291,16 +297,18 @@ function App() {
               <GitFork size={20} />
               <span>Fork</span>
             </button>
-            <button
-              onClick={() => setCurrentGame('PLINKO')}
-              className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'PLINKO'
-                ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
-                : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
-                }`}
-            >
-              <Network size={20} />
-              <span>Plinko</span>
-            </button>
+            {isTestMode && (
+              <button
+                onClick={() => setCurrentGame('PLINKO')}
+                className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-bold transition-colors ${currentGame === 'PLINKO'
+                  ? 'bg-[#0f212e] text-primary border-2 border-primary shadow-lg shadow-primary/20'
+                  : 'bg-panel text-gray-400 border-2 border-[#1a2d37] hover:text-white hover:border-gray-500'
+                  }`}
+              >
+                <Network size={20} />
+                <span>Plinko</span>
+              </button>
+            )}
           </div>
 
           <main className="w-full flex-1 py-12">
@@ -328,7 +336,7 @@ function App() {
                 onGameEnd={() => fetchBalance(playerPubkey)}
               />
             )}
-            {currentGame === 'BACCARAT' && (
+            {currentGame === 'BACCARAT' && isTestMode && (
               <BaccaratPage
                 playerPubkey={playerPubkey}
                 allBalances={allBalances}
@@ -344,7 +352,7 @@ function App() {
                 onGameEnd={() => fetchBalance(playerPubkey)}
               />
             )}
-            {currentGame === 'PLINKO' && (
+            {currentGame === 'PLINKO' && isTestMode && (
               <PlinkoPage
                 playerPubkey={playerPubkey}
                 allBalances={allBalances}
