@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bitcoin, Copy, Check, X, Loader2 } from 'lucide-react';
+import { Bitcoin, Copy, Check, X, Loader2, Zap } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { API_URL } from '../config';
 import { authRequest } from '../utils/api';
 
@@ -123,7 +124,10 @@ export function DepositModal({ isOpen, onClose, btcPrice }: DepositModalProps) {
         </button>
 
         <div className="flex items-center space-x-3 mb-6">
-          <Bitcoin className="text-primary" size={28} />
+          <div className="relative">
+            <Bitcoin className="text-primary" size={28} />
+            <Zap className="absolute -top-1 -right-1 text-yellow-400 fill-yellow-400" size={14} />
+          </div>
           <h2 className="text-2xl font-black text-white uppercase tracking-tighter">
             Deposit <span className="text-primary">Sats</span>
           </h2>
@@ -187,10 +191,20 @@ export function DepositModal({ isOpen, onClose, btcPrice }: DepositModalProps) {
         ) : (
           <div className="space-y-6 animate-in fade-in duration-300">
             <div className="space-y-2">
-              <label className="text-xs uppercase font-bold text-green-500 tracking-wider flex items-center space-x-1">
-                <Check size={14} />
-                <span>Invoice Generated Successfully</span>
-              </label>
+              <div className="flex flex-col items-center space-y-4">
+                <div className="bg-white p-3 rounded-xl">
+                  <QRCodeSVG
+                    value={invoice}
+                    size={200}
+                    level="M"
+                    includeMargin={false}
+                  />
+                </div>
+                <label className="text-xs uppercase font-bold text-green-500 tracking-wider flex items-center space-x-1">
+                  <Zap size={14} className="text-yellow-400 fill-yellow-400" />
+                  <span>Lightning Invoice Ready</span>
+                </label>
+              </div>
               <div className="relative">
                 <textarea
                   readOnly
