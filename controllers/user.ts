@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { connectDB } from '../utils/db';
 import { getOrCreateUser } from '../utils/user_balance';
 import Cryptocurrency from '../models/cryptocurrency';
+import Invoice from '../models/invoice';
 import { AuthenticatedRequest } from '../types/express';
 
 export const getBalance = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
@@ -58,6 +59,20 @@ export const faucet = async (req: AuthenticatedRequest, res: Response): Promise<
 
     await connectDB();
     const user = await getOrCreateUser(pubkey);
+
+    if (!user.test) {
+      const confirmedInvoice = await Invoice.findOne({
+        user_npub: pubkey,
+        status: 'CONFIRMED',
+      });
+
+      if (confirmedInvoice) {
+        res.status(403).json({
+          error: 'Faucet is disabled for users with real deposits to prevent accidental loss of funds.',
+        });
+        return;
+      }
+    }
 
     const btcCurrency = await Cryptocurrency.findOne({ symbol: 'BTC' });
     if (!btcCurrency) {

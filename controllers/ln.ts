@@ -32,6 +32,11 @@ export const deposit = async (req: AuthenticatedRequest, res: Response): Promise
       return;
     }
 
+    if (req.user?.test) {
+      res.status(403).json({ error: 'Deposits are disabled while in Test Mode.' });
+      return;
+    }
+
     const { amount } = req.body; // in satoshis
     if (!amount || typeof amount !== 'number' || amount <= 0) {
       res.status(400).json({ error: 'Invalid amount' });
