@@ -55,7 +55,7 @@ export class GameSeed {
    */
   private nextHash(): Buffer {
     const nonceHex = this.nonce.toString(16).padStart(64, '0');
-    const combined = this.seed + nonceHex;
+    const combined = nonceHex + this.seed
 
     // First SHA256 pass
     let hash = crypto.createHash('sha256').update(combined).digest();
